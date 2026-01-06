@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>きのこたけのこ AIレスバ会場</title>
+    <style>
+        body { font-family: "Helvetica Neue", Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f4f4f4; }
+        h1 { text-align: center; color: #333; }
+        
+        .controls { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .select-group { display: flex; justify-content: space-around; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+        .select-box { text-align: center; }
+        select { padding: 8px; font-size: 16px; border-radius: 4px; border: 1px solid #ccc; }
+        
+        button { display: block; width: 100%; padding: 15px; font-size: 18px; background-color: #ff6b6b; color: white; border: none; border-radius: 4px; cursor: pointer; transition: background 0.3s; }
+        button:hover { background-color: #ff5252; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+
+        #chat-area { display: flex; flex-direction: column; gap: 15px; }
+        
+        .message { padding: 15px; border-radius: 10px; position: relative; max-width: 80%; line-height: 1.5; animation: fadeIn 0.5s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .takenoko { align-self: flex-start; background-color: #d1f7c4; border-left: 5px solid #2e7d32; margin-right: auto; }
+        .kinoko { align-self: flex-end; background-color: #fff3cd; border-right: 5px solid #ff8f00; margin-left: auto; }
+        
+        .speaker-name { font-weight: bold; font-size: 0.9em; margin-bottom: 5px; display: block; color: #555; }
+        
+        .status { text-align: center; color: #666; margin-top: 20px; font-style: italic; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <h1>🔥 きのこ vs たけのこ AIレスバ会場 🔥</h1>
+
+    <div class="controls">
+        <div class="select-group">
+            <div class="select-box">
+                <label>🍄 たけのこ代表</label><br>
+                <select id="takenoko-select"></select>
+            </div>
+            <div class="select-box">
+                <label>🍫 きのこ代表</label><br>
+                <select id="kinoko-select"></select>
+            </div>
+        </div>
+        <button id="start-btn" onclick="startDebate()">議論開始！</button>
+    </div>
+
+    <div id="chat-area"></div>
+    <div id="status" class="status"></div>
+
+    <script>
+        // 初期化：人格リストの読み込み
+        window.onload = async () => {
+            try {
+                const res = await fetch('/api/personas');
+                const personas = await res.json();
+                
+                const tSelect = document.getElementById('takenoko-select');
+                personas.takenoko.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p.id;
+                    opt.textContent = p.name;
+                    tSelect.appendChild(opt);
+                });
+
+                const kSelect = document.getElementById('kinoko-select');
+                personas.kinoko.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p.id;
+                    opt.textContent = p.name;
+                    kSelect.appendChild(opt);
+                });
+            } catch (e) {
+                console.error("プリセット読み込み失敗", e);
+            }
+        };
+
+        function startDebate() {
+            const chatArea = document.getElementById('chat-area');
+            const statusDiv = document.getElementById('status');
+            const startBtn = document.getElementById('start-btn');
+            const tId = document.getElementById('takenoko-select').value;
+            const kId = document.getElementById('kinoko-select').value;
+
+            // リセット
+            chatArea.innerHTML = '';
+            statusDiv.textContent = '議論中...（4秒ごとに発言します）';
+            startBtn.disabled = true;
+
+            // SSE接続
+            const eventSource = new EventSource(`/api/debate?takenokoId=${tId}&kinokoId=${kId}`);
+
+            eventSource.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+
+                if (data.type === 'start') {
+                    console.log("Start:", data.topic);
+                } else if (data.type === 'message') {
+                    const msgDiv = document.createElement('div');
+                    msgDiv.className = `message ${data.speakerClass}`;
+                    msgDiv.innerHTML = `<span class="speaker-name">${data.speaker}</span>${data.text}`;
+                    chatArea.appendChild(msgDiv);
+                    window.scrollTo(0, document.body.scrollHeight); // 自動スクロール
+                } else if (data.type === 'end') {
+                    statusDiv.textContent = '議論終了';
+                    eventSource.close();
+                    startBtn.disabled = false;
+                } else if (data.type === 'error') {
+                    statusDiv.textContent = `エラー: ${data.text}`;
+                    eventSource.close();
+                    startBtn.disabled = false;
+                }
+            };
+
+            eventSource.onerror = function() {
+                eventSource.close();
+                startBtn.disabled = false;
+            };
+        }
+    </script>
+</body>
+</html>
