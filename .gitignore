@@ -1,23 +1,12 @@
-# ----------------------
-# 依存関係 (Dependencies)
-# ----------------------
-node_modules/
-package-lock.json
-# ※ package-lock.json はチーム開発ならコミットすべきですが、
-# 個人開発で環境差異を気にしないなら無視しても動きます。
-# 通常はコミット推奨ですが、node_modulesは必須で無視です。
 
-# ----------------------
-# 環境変数・セキュリティ (Security)
-# ----------------------
-# ★重要: APIキーが入っているため絶対コミットしないこと
+node_modules/
+
+
 .env
 .env.local
 .env.*.local
 
-# ----------------------
-# ログファイル (Logs)
-# ----------------------
+
 logs
 *.log
 npm-debug.log*
@@ -25,17 +14,11 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# ----------------------
-# OS・システムファイル (OS Files)
-# ----------------------
 .DS_Store
 Thumbs.db
 ehthumbs.db
 Desktop.ini
 
-# ----------------------
-# エディタ・IDE設定 (Editor Config)
-# ----------------------
 .vscode/
 .idea/
 *.swp

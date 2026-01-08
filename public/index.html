@@ -4,11 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>きのこたけのこ AIコロシアム - FINAL PRODUCTION</title>
-    <!-- Tailwind CSS -->
+
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
+
+    <!-- React & Babel for Voting System -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Google Fonts: DotGothic16 -->
+
     <link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -35,17 +40,17 @@
             image-rendering: pixelated;
         }
 
-        /* 8bit Style Reset */
+  
         * { border-radius: 0 !important; }
 
-        /* CRT Effect */
+   
         body::after {
             content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
             z-index: 999; background-size: 100% 2px, 3px 100%; pointer-events: none;
         }
 
-        /* Animations */
+
         @keyframes shake-hard {
             0% { transform: translate(0, 0); } 20% { transform: translate(-4px, 4px); } 40% { transform: translate(4px, -4px); } 60% { transform: translate(-4px, -4px); } 80% { transform: translate(4px, 4px); } 100% { transform: translate(0, 0); }
         }
@@ -60,7 +65,7 @@
             animation: flash-red 0.1s steps(2) 2; opacity: 0.5;
         }
 
-        /* Coin Toss */
+        /* コイントス　バグある！！ */
         .coin-container { perspective: none; }
         .coin {
             width: 120px; height: 120px; position: relative; border: 4px solid #fff; background: #eab308; box-shadow: 4px 4px 0 #000;
@@ -73,7 +78,7 @@
             position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.5rem; color: #000;
         }
         
-        /* Cut-in */
+   
         .cut-in-container {
             position: fixed; inset: 0; pointer-events: none; z-index: 100;
             display: flex; align-items: center; justify-content: center; opacity: 0; transition: none;
@@ -87,12 +92,12 @@
         }
         .cut-in-container.perfect-active .perfect-text { display: block; }
 
-        /* Speed lines */
+
         .speed-lines {
             position: absolute; inset: 0; background-image: radial-gradient(#fff 10%, transparent 10%); background-size: 10px 10px; opacity: 0.1; z-index: -1;
         }
 
-        /* Battle UI */
+        /*戦闘のUI*/
         .theme-takenoko .header-bg { background: var(--take-green); border-bottom: 4px solid #fff; }
         .theme-kinoko .header-bg { background: var(--kino-brown); border-bottom: 4px solid #fff; }
         
@@ -102,7 +107,7 @@
         .chat-bubble.self { border-color: #00ff00; color: #00ff00; margin-left: auto; }
         .chat-bubble.opponent { border-color: #ff0000; color: #ff0000; margin-right: auto; }
         
-        /* HP Bar */
+        /* HPバー*/
         .hp-container { position: relative; height: 20px; background: #000; border: 2px solid #fff; padding: 2px; }
         .hp-fill { height: 100%; transition: width 0.2s steps(4); }
         .damage-number {
@@ -111,7 +116,7 @@
         .block-text { color: #00ffff !important; text-shadow: 2px 2px 0 #000 !important; font-size: 1.5rem; }
         @keyframes float-up { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-30px); opacity: 0; } }
 
-        /* Selects */
+      
         .faction-select { border: 4px solid #fff; box-shadow: 6px 6px 0 #000; background: #444; transition: none; }
         .faction-select:hover { background: #555; transform: translate(-2px, -2px); box-shadow: 8px 8px 0 #000; }
         .faction-select:active { transform: translate(4px, 4px); box-shadow: 0 0 0 #000; }
@@ -125,13 +130,13 @@
         .opponent-select { border: 2px solid #555; background: #111; color: #fff; box-shadow: 4px 4px 0 #000; }
         .opponent-select:hover { border-color: #fff; }
 
-        /* Input */
+
         input[type="text"] { border: 4px solid #fff; background: #000; color: #00ff00; box-shadow: inset 4px 4px 0 #000; font-family: "DotGothic16", sans-serif; }
         input[type="text"]:focus { outline: none; border-color: #ffff00; }
         #attack-btn { border: 4px solid #fff; background: #0000ff; box-shadow: 4px 4px 0 #000; border-radius: 0; }
         #attack-btn:active { transform: translate(4px, 4px); box-shadow: none; }
 
-        /* Result Screen Styles */
+ 
         .res-container {
             border: 4px solid #fff; background: #000; color: #fff;
             box-shadow: 8px 8px 0 rgba(0,0,0,0.5);
@@ -179,7 +184,7 @@
         .res-btn:hover { background: #ffff00; border-color: #fff; transform: translate(-2px, -2px); box-shadow: 6px 6px 0 #000; }
         .res-btn:active { transform: translate(2px, 2px); box-shadow: none; }
 
-        /* DEBUG UI CSS */
+        /*DEBUG*/
         #debug-btn {
             position: fixed; bottom: 10px; right: 10px; z-index: 9999;
             background: #000; color: #0f0; border: 2px solid #0f0;
@@ -212,7 +217,7 @@
         #toggle-debug-vis { font-size: 10px; color: #555; background: none; border: 1px solid #333; padding: 2px 5px; cursor: pointer; }
         #toggle-debug-vis:hover { color: #fff; border-color: #fff; }
 
-        /* Sound Button */
+        /* Soundボタン*/
         #sound-toggle {
             position: fixed; top: 10px; right: 10px; z-index: 10000;
             background: #000; color: #fff; border: 2px solid #fff;
@@ -225,13 +230,13 @@
 </head>
 <body class="bg-gray-900 text-gray-100">
 
-    <!-- Sound Toggle -->
+
     <button id="sound-toggle" onclick="AudioSys.toggleMute()">
         <i data-lucide="volume-x" id="icon-mute"></i>
         <i data-lucide="volume-2" id="icon-sound" class="hidden"></i>
     </button>
 
-    <!-- SETUP SCREEN -->
+
     <div id="setup-screen" class="fixed inset-0 z-50 bg-[#222] flex items-center justify-center p-4 overflow-y-auto">
         <div class="max-w-4xl w-full bg-[#333] border-4 border-white shadow-none my-8 p-1">
             <div class="p-8 text-center bg-[#444] border-b-4 border-white relative">
@@ -245,7 +250,7 @@
             </div>
             
             <div class="p-6 md:p-8 space-y-8">
-                <!-- STEP 1: Faction -->
+                <!-- 陣営選択 -->
                 <div>
                     <h2 class="text-lg font-bold text-white mb-4 text-center flex items-center justify-center">
                         <span class="bg-black border-2 border-white px-3 py-0.5 text-xs mr-3">STEP 1</span>
@@ -267,7 +272,7 @@
                     </div>
                 </div>
 
-                <!-- STEP 2: Difficulty -->
+                <!-- 難易度選択 -->
                 <div id="difficulty-section" class="opacity-30 pointer-events-none grayscale">
                     <h2 class="text-lg font-bold text-white mb-4 text-center flex items-center justify-center">
                         <span class="bg-black border-2 border-white px-3 py-0.5 text-xs mr-3">STEP 2</span>
@@ -297,7 +302,7 @@
                     </div>
                 </div>
 
-                <!-- STEP 3: Opponent -->
+                <!-- キャラ選択 -->
                 <div id="opponent-section" class="opacity-30 pointer-events-none grayscale">
                     <h2 class="text-lg font-bold text-white mb-4 text-center flex items-center justify-center">
                         <span class="bg-black border-2 border-white px-3 py-0.5 text-xs mr-3">STEP 3</span>
@@ -316,7 +321,7 @@
         </div>
     </div>
 
-    <!-- RULE INFO OVERLAY -->
+    <!-- 追加ルール-->
     <div id="rule-overlay" class="fixed inset-0 z-[70] bg-black/90 hidden items-center justify-center flex-col p-6">
         <div class="max-w-lg w-full text-center space-y-6 border-4 border-red-500 bg-black p-8 shadow-[8px_8px_0_#550000]">
             <h2 class="text-3xl md:text-4xl font-black text-red-500 tracking-wider border-b-4 border-red-500 pb-4 inline-block">WARNING</h2>
@@ -334,7 +339,7 @@
         </div>
     </div>
 
-    <!-- COIN TOSS OVERLAY -->
+    <!-- コイントスこっちがバグ？ -->
     <div id="coin-overlay" class="fixed inset-0 z-[60] bg-black/90 hidden items-center justify-center flex-col">
         <h2 class="text-2xl text-white font-bold mb-8 tracking-widest text-shadow-[2px_2px_0_#000]">WHO GOES FIRST?</h2>
         <div class="coin-container">
@@ -343,7 +348,7 @@
         <p id="coin-result" class="text-3xl font-black text-yellow-400 mt-12 opacity-0">YOU START!</p>
     </div>
 
-    <!-- BATTLE SCREEN -->
+    <!-- 戦闘画面 -->
     <div id="battle-screen" class="hidden flex-col h-full relative bg-[#111]">
         <div class="header-bg p-2 z-20">
             <div class="max-w-4xl mx-auto grid grid-cols-[1fr_auto_1fr] gap-4 items-center px-2">
@@ -370,20 +375,20 @@
                 <button type="submit" id="attack-btn" class="text-white px-6 py-2 font-bold"><i data-lucide="swords" class="w-8 h-8"></i></button>
             </form>
         </div>
-        
-        <!-- Overlays -->
+
+        <!-- カットイン -->
         <div id="cut-in" class="cut-in-container"><div class="speed-lines"></div><div id="cut-in-text" class="cut-in-text">異議あり！</div><div id="perfect-text" class="perfect-text absolute">PERFECT!!</div></div>
         <div id="flash-overlay"></div>
         
-        <!-- KO / RESULT OVERLAY -->
+        <!-- 決着 -->
         <div id="ko-overlay" class="fixed inset-0 z-[60] bg-black/95 hidden items-center justify-center flex-col text-center p-4">
-            <!-- Loading State -->
+            <!-- Loading... -->
             <div id="result-loading" class="hidden flex-col items-center">
                 <div class="text-3xl text-green-400 font-bold mb-4 animate-pulse">CALCULATING...</div>
                 <div class="w-64 h-4 border-2 border-white p-1"><div class="h-full bg-green-400 animate-[width_2s_steps(4)_infinite]" style="width: 50%"></div></div>
             </div>
 
-            <!-- KO State (Fallback / Initial) -->
+            <!-- 再戦かタイトル -->
             <div id="result-simple" class="flex flex-col items-center">
                 <h2 class="text-[6rem] font-black text-red-600 tracking-tighter mb-4" style="text-shadow: 4px 4px 0 #fff;">K.O.</h2>
                 <p id="winner-announce" class="text-3xl font-bold text-white mb-8">YOU WIN</p>
@@ -393,7 +398,7 @@
                 </div>
             </div>
 
-            <!-- Detail Result State -->
+            <!-- 詳細リザルト -->
             <div id="result-detail" class="hidden res-container animate-[fadeIn_0.5s_ease-out] max-h-[90vh] overflow-y-auto">
                 <div class="res-header">BATTLE RESULT</div>
                 <div class="res-content">
@@ -424,6 +429,8 @@
                         <div class="res-enemy-icon">👤</div>
                         <div id="res-enemy-msg" class="res-enemy-msg">...</div>
                     </div>
+                    <!-- React Voting Root -->
+                    <div id="react-vote-root" class="my-4"></div>
 
                     <div class="grid grid-cols-2 gap-2 mt-2">
                         <button onclick="location.reload()" class="res-btn bg-gray-200">タイトルへ</button>
@@ -434,7 +441,7 @@
         </div>
     </div>
 
-    <!-- DEBUG UI -->
+    <!-- DEBUG -->
     <button id="debug-btn" onclick="debugSystem.toggle()">[DEBUG]</button>
     <div id="debug-panel">
         <div class="db-header"><span class="db-title">DEBUG CONSOLE</span><button class="db-btn danger" onclick="debugSystem.toggle()">X</button></div>
@@ -449,9 +456,16 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT -->
+
+
+
+
+
+
+    <!-- ここからJAVASCRIPT -->
     <script>
-        // --- Configuration ---
+        //コンフィグ
+        //キャラクター定義
         const personas = {
             takenoko: [
                 { id: "pale_girl", name: "淡色女子", hp: 100, text: "【指示】写真写りと空間の雰囲気（エモさ）だけを重視する、語彙力が低めの淡色女子になりきって。ひらがな多めで、感情だけで会話してください。\n【口調例】「え、ここ光の入り方天才じゃない？ 優勝したわ。てかラテの色味が服と合うから撮って。飲むのは後でいいし。」" },
@@ -472,7 +486,7 @@
             king:   { hpMult: 1.3, maxDmg: 40, label: "KING", isZeroSum: true, totalDmg: 40 }
         };
 
-        // --- State ---
+        //状態管理
         const state = {
             playerFaction: null, enemyFaction: null, difficulty: null, enemyId: null,
             playerHP: 100, enemyHP: 100, maxPlayerHP: 100, maxEnemyHP: 100,
@@ -480,7 +494,7 @@
             isGameFinished: false
         };
 
-        // --- Debug & Audio (Same as before) ---
+        //デバッグとオーディオ
         window.debugSystem = {
             toggle: () => {
                 document.getElementById('debug-panel').classList.toggle('open');
@@ -539,22 +553,20 @@
                     muteIcon.classList.add('hidden');
                     soundIcon.classList.remove('hidden');
                     btn.classList.add('active');
-                    // Resume context if suspended
+
                     if (AudioSys.ctx.state === 'suspended') {
                         AudioSys.ctx.resume();
                     }
-                    // Start BGM based on current state
                     if (document.getElementById('setup-screen').classList.contains('hidden') === false) {
                         AudioSys.playBGM('setup');
                     } else if (state.isGameFinished) {
-                        // Keep current
                     } else {
                         AudioSys.playBGM('battle');
                     }
                 }
             },
 
-            // Simple tone generator for SE
+            //効果音
             playTone: (freq, type, duration, vol = 0.1) => {
                 if (AudioSys.isMuted || !AudioSys.ctx) return;
                 const osc = AudioSys.ctx.createOscillator();
@@ -589,7 +601,7 @@
                 noise.start();
             },
 
-            // --- BGM Sequencer ---
+            //音のオンオフなど
             stopBGM: () => {
                 if (AudioSys.bgmTimeout) clearTimeout(AudioSys.bgmTimeout);
                 AudioSys.bgmOscillators.forEach(osc => {
@@ -600,7 +612,7 @@
 
             playBGM: (trackName) => {
                 if (AudioSys.isMuted || !AudioSys.ctx) return;
-                if (AudioSys.currentTrack === trackName && AudioSys.bgmOscillators.length > 0) return; // Already playing
+                if (AudioSys.currentTrack === trackName && AudioSys.bgmOscillators.length > 0) return; 
                 
                 AudioSys.stopBGM();
                 AudioSys.currentTrack = trackName;
@@ -612,7 +624,7 @@
                         notes: [
                             {f: 261.63, d: 0.2}, {f: 0, d: 0.2}, {f: 329.63, d: 0.2}, {f: 0, d: 0.2}, 
                             {f: 392.00, d: 0.2}, {f: 0, d: 0.2}, {f: 523.25, d: 0.2}, {f: 0, d: 0.2}
-                        ], // C major arpeggio
+                        ], 
                         base: [261.63, 196.00]
                     },
                     battle: {
@@ -621,7 +633,7 @@
                             {f: 440, d: 0.15}, {f: 440, d: 0.15}, {f: 0, d: 0.15}, {f: 440, d: 0.15}, 
                             {f: 0, d: 0.15}, {f: 349.23, d: 0.15}, {f: 392.00, d: 0.15}, {f: 523.25, d: 0.15},
                             {f: 440, d: 0.15}, {f: 0, d: 0.15}, {f: 329.63, d: 0.15}, {f: 293.66, d: 0.3}
-                        ] // A minorish
+                        ] 
                     },
                     win: {
                         tempo: 140,
@@ -646,7 +658,7 @@
                     
                     const note = track.notes[AudioSys.noteIndex % track.notes.length];
                     const secPerBeat = 60 / track.tempo;
-                    const duration = note.d * secPerBeat; // sec
+                    const duration = note.d * secPerBeat;
                     
                     if (note.f > 0) {
                         const osc = AudioSys.ctx.createOscillator();
@@ -662,14 +674,14 @@
                         osc.start();
                         osc.stop(AudioSys.ctx.currentTime + duration);
                         AudioSys.bgmOscillators.push(osc);
-                        // Cleanup
+                        //リセット！！
                         setTimeout(() => {
                             const idx = AudioSys.bgmOscillators.indexOf(osc);
                             if(idx > -1) AudioSys.bgmOscillators.splice(idx, 1);
                         }, duration * 1000);
                     }
 
-                    // Loop logic
+                    
                     AudioSys.noteIndex++;
                     if (trackName === 'win' || trackName === 'lose') {
                         if (AudioSys.noteIndex < track.notes.length) {
@@ -682,7 +694,7 @@
                 playLoop();
             },
 
-            // SE
+            // 効果音定義
             se: {
                 select: () => AudioSys.playTone(880, 'sine', 0.1),
                 coin: () => { AudioSys.playTone(1500, 'sine', 0.05, 0.05); setTimeout(() => AudioSys.playTone(1800, 'sine', 0.1, 0.05), 100); },
@@ -695,13 +707,12 @@
                 ko: () => { AudioSys.playNoise(1.0); setTimeout(() => AudioSys.playTone(100, 'sawtooth', 2.0, 0.5), 100); }
             }
         };
-        // Expose AudioSys globally so HTML onclick handlers can access it
+        
         window.AudioSys = AudioSys;
 
-        // --- Setup Logic ---
+       
         lucide.createIcons();
 
-        // Helper to render opponents
         function renderOpponents() {
             const grid = document.getElementById('opponent-grid');
             grid.innerHTML = '';
@@ -717,7 +728,6 @@
 
         window.selectFaction = (faction) => {
             AudioSys.init(); 
-            // Audio Context starts on user interaction
             if(AudioSys.ctx.state === 'suspended' && !AudioSys.isMuted) AudioSys.ctx.resume();
             if(!AudioSys.isMuted && AudioSys.currentTrack !== 'setup') AudioSys.playBGM('setup');
 
@@ -759,7 +769,8 @@
             const btn = document.getElementById('start-btn'); btn.disabled = false; btn.classList.add('animate-pulse');
         };
 
-        // --- Game Sequence ---
+        //ゲーム開始の流れ
+
         window.startSequence = () => {
             const enemyData = personas[state.enemyFaction].find(p => p.id === state.enemyId); const diffSetting = difficultySettings[state.difficulty];
             state.enemyHP = state.maxEnemyHP = Math.floor(enemyData.hp * diffSetting.hpMult); state.playerHP = state.maxPlayerHP = 100; state.history = []; state.isGameFinished = false;
@@ -797,7 +808,7 @@
             if (!state.isPlayerTurn) { const input = document.getElementById('user-input'); const btn = document.getElementById('attack-btn'); input.disabled = true; input.placeholder = "相手の攻撃を待っています..."; btn.disabled = true; triggerAITurn(true, ""); }
         }
 
-        // --- Battle Logic ---
+        //実際のバトル処理
         window.handleAttack = async (e) => {
             e.preventDefault(); if (state.isProcessing || state.isGameFinished) return;
             const input = document.getElementById('user-input'); const text = input.value.trim(); if (!text) return;
@@ -820,7 +831,7 @@
                 const diffConfig = difficultySettings[state.difficulty];
                 let aiBehaviorInstruction = "", replyLimit = "80文字以内", damageInstruction = "";
                 
-                // --- プロンプト構築 (変更なし) ---
+                //プロンプト構築(非常に重要)
                 const sRankExamples = [
                     `【例1：本質的価値の逆転】User:「一体感じゃない、『味の濁り』だ。クッキーが湿気てチョコのキレを殺してる。きのこの分離構造こそが、素材のポテンシャルを活かす唯一の正解だ。」判定: AI敗北 (Perfect)`,
                     `【例2：ターゲット層への分析】User:「売れてるのは『思考停止した大衆』に迎合してるからだろ？わかりやすい甘さと柔らかさに逃げてるだけ。きのこを選ぶのは、本質を理解できる『選ばれし知性』だ。」判定: AI敗北 (Perfect)`,
@@ -850,7 +861,7 @@
                 
                 debugSystem.log("SYSTEM PROMPT", systemPrompt);
 
-                // --- ★ここからリトライ機能の実装 ---
+                //リトライ機能！！！(Gemini APIエラー出しすぎて、これないとエラーばっかり出す)
                 let retryCount = 0;
                 const maxRetries = 2; // 初回 + 再試行2回 = 計3回
                 let responseJson = null;
@@ -869,7 +880,7 @@
                         });
                         
                         if (!res.ok) {
-                            // サーバーエラー(500や503)の場合、エラーとして投げる
+                            // サーバーエラー503の場合
                             throw new Error(`Server Error: ${res.status}`);
                         }
                         
@@ -878,29 +889,29 @@
                         break; 
 
                     } catch (e) {
-                        // エラーが発生した場合
+                        //エラーが発生した場合
                         if (retryCount < maxRetries) {
-                            // まだリトライ回数が残っている場合
+                           
                             retryCount++;
-                            const waitTime = 5000; // 5秒
+                            const waitTime = 5000; 
                             debugSystem.log("RETRY", `サーバー混雑(503)のため待機中... ${waitTime/1000}秒後に再試行します (${retryCount}/${maxRetries})`);
                             
-                            // 5秒待機
+                            // 5秒待機！！これめちゃくちゃ重要
                             await wait(waitTime);
                         } else {
-                            // 回数切れの場合、ここで本当のエラーとして処理を中断させる
+                            // 仏の顔も三度まで
                             throw e; 
                         }
                     }
                 }
-                // --- ★リトライ機能ここまで ---
+                
 
                 const responseText = responseJson.text;
                 debugSystem.log("AI RESPONSE", responseText);
                 const data = JSON.parse(responseText);
                 removeLoading(loadingId);
 
-                // Resolution
+                // ダメージ計算
                 let userDmg = data.user_damage || 0; let aiDmg = data.ai_damage || 0;
                 if (diffConfig.isZeroSum && !isFirstStrike) {
                     const total = userDmg + aiDmg;
@@ -911,25 +922,25 @@
                 }
                 if (isFirstStrike) userDmg = 0;
 
-                // Apply AI Damage to Enemy HP
+                // ダメージ計算の追加ルール
                 if (!isFirstStrike) {
                     if (data.is_block && !diffConfig.isZeroSum) { showFloatingText('hp-bar-enemy', "BLOCK!", "block-text"); AudioSys.se.block(); }
                     else if (aiDmg > 0) { state.enemyHP = Math.max(0, state.enemyHP - aiDmg); showFloatingDamage('hp-bar-enemy', aiDmg); AudioSys.se.damage(); shakeScreen('small'); updateHPUI(); }
                 }
                 if (state.enemyHP <= 0) { finishGame(true); return; }
 
-                // AI Reply
+              
                 await wait(600);
                 if (data.is_critical || (diffConfig.isZeroSum && aiDmg >= diffConfig.totalDmg * 0.8)) { AudioSys.se.critical(); showCutIn(data.shout || "論破！"); await wait(1000); }
                 addMessage(data.reply, 'opponent', enemyData.name);
                 
-                // 履歴更新
+                
                 if (isFirstStrike) {
                     state.history.push({ role: "user", parts: [{ text: firstStrikeMsg }] });
                 }
                 state.history.push({ role: "model", parts: [{ text: data.reply }] });
 
-                // Apply User Damage to Player HP
+                // ユーザーダメージ処理
                 if (userDmg > 0) {
                     await wait(600); state.playerHP = Math.max(0, state.playerHP - userDmg);
                     document.getElementById('flash-overlay').classList.add('flash-damage'); setTimeout(() => document.getElementById('flash-overlay').classList.remove('flash-damage'), 300);
@@ -945,7 +956,7 @@
                 if (state.playerHP <= 0) { finishGame(false); }
 
             } catch (e) {
-                // リトライも全て失敗した時に初めてここに来る
+                // リトライも全て失敗した時
                 console.error(e); 
                 removeLoading(loadingId); 
                 addMessage("(システムエラー: サーバーが混み合っています。時間を置いて再読込してください🍄)", 'opponent'); 
@@ -956,7 +967,7 @@
             }
         }
 
-        // --- Helper Functions ---
+        //HP UI更新
         window.updateHPUI = () => {
             const pPct = (state.playerHP / state.maxPlayerHP) * 100; const ePct = (state.enemyHP / state.maxEnemyHP) * 100;
             document.getElementById('hp-bar-player').style.width = `${pPct}%`; document.getElementById('hp-bar-enemy').style.width = `${ePct}%`;
@@ -994,7 +1005,7 @@
         function removeLoading(id) { const el = document.getElementById(id); if (el) el.remove(); }
         function wait(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
-        // --- RESULT LOGIC ---
+        //ゲーム終了処理リザルト画面とか
         window.finishGame = async (isPlayerWin) => {
             if (state.isGameFinished) return;
             state.isGameFinished = true;
@@ -1037,7 +1048,7 @@
             try {
                 const enemyData = personas[state.enemyFaction].find(p => p.id === state.enemyId);
                 const historyText = state.history.map(h => `[${h.role}]: ${h.parts[0].text}`).join("\n");
-                
+                //リザルトのプロンプト生成
                 const prompt = `
                 あなたは「きのこたけのこ論争」の8bitゲームの審判です。以下の戦いの記録を分析し、JSON形式でリザルトを出力してください。
                 ユーザーは「${state.playerFaction}派」、対戦相手は「${enemyData.name}（${state.enemyFaction}派）」です。
@@ -1065,7 +1076,7 @@
                         responseMimeType: "application/json"
                     })
                 });
-
+                //未解決！！たまにここでエラーになる
                 if (!res.ok) throw new Error("Result API Error");
                 
                 const responseJson = await res.json();
@@ -1094,6 +1105,141 @@
                 simpleView.classList.remove('hidden');
             }
         }
+    
+    
+    </script>
+    <!-- React Voting Logic -->
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const VoteComponent = () => {
+            const [votes, setVotes] = useState({ kinoko: 0, takenoko: 0 });
+            const [hasVoted, setHasVoted] = useState(false);
+            const [battleId, setBattleId] = useState(null);
+            const [isLoading, setIsLoading] = useState(false);
+
+            // 現在のバトルIDを監視して、新しいバトルなら投票権を復活させる
+            useEffect(() => {
+                const checkBattle = () => {
+                    // window.currentBattleId は後述のフックで設定されます
+                    if (window.currentBattleId !== battleId) {
+                        setBattleId(window.currentBattleId);
+                        setHasVoted(false);
+                        fetchVotes();
+                    }
+                };
+                
+                // リザルトが表示されるたびにチェック
+                const interval = setInterval(checkBattle, 1000);
+                checkBattle(); // 初回実行
+
+                return () => clearInterval(interval);
+            }, [battleId]);
+
+            const fetchVotes = async () => {
+                try {
+                    const res = await fetch('/api/votes');
+                    const data = await res.json();
+                    setVotes(data);
+                } catch (e) {
+                    console.error("Failed to fetch votes", e);
+                }
+            };
+
+            const handleVote = async (faction) => {
+                if (hasVoted || isLoading) return;
+                setIsLoading(true);
+
+                try {
+                    const res = await fetch('/api/votes', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ faction })
+                    });
+                    const data = await res.json();
+                    setVotes(data);
+                    setHasVoted(true);
+                } catch (e) {
+                    console.error("Vote failed", e);
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+
+            const total = votes.kinoko + votes.takenoko;
+            const kinokoPct = total === 0 ? 50 : Math.round((votes.kinoko / total) * 100);
+            const takenokoPct = total === 0 ? 50 : Math.round((votes.takenoko / total) * 100);
+
+            return (
+                <div className="border-4 border-white bg-gray-800 p-4 font-mono text-white">
+                    <h3 className="text-center text-yellow-400 font-bold mb-2 border-b-2 border-gray-600 pb-1">
+                        FACTION WAR VOTING
+                    </h3>
+                    
+                    {/* グラフ部分 */}
+                    <div className="flex items-center justify-between text-xs mb-1 px-1">
+                        <span className="text-orange-400">🍄 {votes.kinoko}</span>
+                        <span className="text-gray-400">TOTAL: {total}</span>
+                        <span className="text-green-400">🎍 {votes.takenoko}</span>
+                    </div>
+                    <div className="h-4 w-full flex border-2 border-white mb-4">
+                        <div 
+                            style={{ width: `${kinokoPct}%` }} 
+                            className="bg-orange-600 h-full transition-all duration-500"
+                        />
+                        <div 
+                            style={{ width: `${takenokoPct}%` }} 
+                            className="bg-green-600 h-full transition-all duration-500"
+                        />
+                    </div>
+
+                    {/* 投票ボタンエリア */}
+                    {!hasVoted ? (
+                        <div className="grid grid-cols-2 gap-4">
+                            <button 
+                                onClick={() => handleVote('kinoko')}
+                                disabled={isLoading}
+                                className="bg-orange-800 border-2 border-orange-500 hover:bg-orange-700 active:translate-y-1 p-2 text-sm font-bold transition-none"
+                            >
+                                VOTE<br/>KINOKO
+                            </button>
+                            <button 
+                                onClick={() => handleVote('takenoko')}
+                                disabled={isLoading}
+                                className="bg-green-800 border-2 border-green-500 hover:bg-green-700 active:translate-y-1 p-2 text-sm font-bold transition-none"
+                            >
+                                VOTE<br/>TAKENOKO
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="text-center bg-gray-700 py-2 border-2 border-gray-500 text-yellow-200 animate-pulse">
+                            VOTE ACCEPTED!
+                        </div>
+                    )}
+                    <div className="text-[10px] text-center text-gray-500 mt-2">
+                        ※ 1バトルにつき1回のみ投票可能
+                    </div>
+                </div>
+            );
+        };
+
+        // Reactのマウント処理
+        const rootElement = document.getElementById('react-vote-root');
+        if (rootElement) {
+            const root = ReactDOM.createRoot(rootElement);
+            root.render(<VoteComponent />);
+        }
+
+        // 既存のコードを変更せずにフックするための処理
+        // バトル開始時に一意のIDを生成し、投票権をリセットするためのトリガーとする
+        const originalStartSequence = window.startSequence;
+        window.startSequence = () => {
+            window.currentBattleId = Date.now(); // バトルIDを更新
+            if (originalStartSequence) originalStartSequence();
+        };
+
+        // 初回ロード時用のID設定
+        window.currentBattleId = Date.now();
     </script>
 </body>
 </html>

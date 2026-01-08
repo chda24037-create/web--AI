@@ -1,4 +1,4 @@
-// APIキーの動作確認用
+// APIキーの動作確認用、これはいらないファイル
 require('dotenv').config();
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 

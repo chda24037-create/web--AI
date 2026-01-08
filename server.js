@@ -13,10 +13,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Gemini APIの初期化
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-// 使用モデル (index.htmlに合わせて設定)
-const MODEL_NAME = "gemini-2.5-flash-lite"; // 最新の軽量モデルに変更、または適宜調整
+// 使用モデル
+const MODEL_NAME = "gemini-2.5-flash-lite"; // google cloud の2.5-flash-liteが一番ゆるい？
 
-// --- チャット生成エンドポイント ---
+//
 app.post('/api/chat', async (req, res) => {
     try {
         const { history, message, systemInstruction, responseMimeType } = req.body;
@@ -29,8 +29,7 @@ app.post('/api/chat', async (req, res) => {
             systemInstruction: systemInstruction ? { parts: [{ text: systemInstruction }] } : undefined
         });
 
-        // 過去の履歴を使ってチャットを開始
-        // SDKの仕様上、historyの形式を合わせる必要があるためそのまま渡す
+        //過去の履歴を使ってチャットを開始
         const chat = model.startChat({
             history: history || []
         });
@@ -47,7 +46,7 @@ app.post('/api/chat', async (req, res) => {
     }
 });
 
-// --- 単発生成エンドポイント（リザルト用） ---
+//リザルト用
 app.post('/api/generate', async (req, res) => {
     try {
         const { prompt, responseMimeType } = req.body;
@@ -74,3 +73,53 @@ app.post('/api/generate', async (req, res) => {
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
 });
+
+
+// --- VOTE SYSTEM ADDITION ---
+const fs = require('fs');
+const VOTE_FILE = path.join(__dirname, 'votes.json');
+
+// 投票データの初期化・読み込み
+function getVotes() {
+    try {
+        if (!fs.existsSync(VOTE_FILE)) {
+            const initialData = { kinoko: 0, takenoko: 0 };
+            fs.writeFileSync(VOTE_FILE, JSON.stringify(initialData));
+            return initialData;
+        }
+        return JSON.parse(fs.readFileSync(VOTE_FILE, 'utf8'));
+    } catch (e) {
+        console.error("Vote read error:", e);
+        return { kinoko: 0, takenoko: 0 };
+    }
+}
+
+// 投票データを保存
+function saveVotes(data) {
+    try {
+        fs.writeFileSync(VOTE_FILE, JSON.stringify(data));
+    } catch (e) {
+        console.error("Vote save error:", e);
+    }
+}
+
+// 投票状況の取得API
+app.get('/api/votes', (req, res) => {
+    const votes = getVotes();
+    res.json(votes);
+});
+
+// 投票実行API
+app.post('/api/votes', (req, res) => {
+    const { faction } = req.body;
+    if (faction !== 'kinoko' && faction !== 'takenoko') {
+        return res.status(400).json({ error: 'Invalid faction' });
+    }
+
+    const votes = getVotes();
+    votes[faction] = (votes[faction] || 0) + 1;
+    saveVotes(votes);
+
+    res.json(votes);
+});
+// ----------------------------
