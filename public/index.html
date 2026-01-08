@@ -7,7 +7,7 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- React & Babel for Voting System -->
+    <!-- Reactの投票システムに必要 -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -429,7 +429,7 @@
                         <div class="res-enemy-icon">👤</div>
                         <div id="res-enemy-msg" class="res-enemy-msg">...</div>
                     </div>
-                    <!-- React Voting Root -->
+                    <!-- React-->
                     <div id="react-vote-root" class="my-4"></div>
 
                     <div class="grid grid-cols-2 gap-2 mt-2">
@@ -852,7 +852,7 @@
                     damageInstruction = `【通常ダメージルール】ユーザー攻撃上限20、AI攻撃上限${diffConfig.maxDmg}。ユーザー自爆ならuser_damage最大、ai_damage0。`;
                 }
 
-                if (state.difficulty === 'easy') { replyLimit = "80文字以内"; aiBehaviorInstruction = `**難易度: EASY**。60%の確率で論理的でない子供っぽい悪口や意味不明な発言をし、隙を見せてください。`; }
+                if (state.difficulty === 'easy') { replyLimit = "80文字以内"; aiBehaviorInstruction = `**難易度: EASY**。80%の確率で論理的でない子供っぽい悪口や意味不明な発言をし、隙を見せてください。少しだけ説得に穴のある文章にすること。`; }
                 else if (state.difficulty === 'normal') { replyLimit = "80文字以内"; aiBehaviorInstruction = `**難易度: NORMAL**。基本は論理的ですが、30%程度で感情的になり論点がずれる人間味を見せてください。`; }
                 else if (state.difficulty === 'hard') { replyLimit = "150〜180文字"; aiBehaviorInstruction = `**難易度: HARD**。熟練のディベーターとして振る舞ってください。論理的かつ攻撃的に、約150〜180文字の説得力ある文章で反論してください。`; }
                 else { replyLimit = "推敲し200文字以内"; aiBehaviorInstruction = `**難易度: KING**。世界最強の論客として、冷徹かつ完璧な論理で相手をねじ伏せてください。200文字以内の凝縮された論理で完全論破を行ってください。もし判定でAIが負けた（ai_damageが大きい）場合は、プライドが崩れさり動揺してください。`; }
@@ -880,11 +880,11 @@
                         });
                         
                         if (!res.ok) {
-                            // サーバーエラー503の場合
+                            // サーバーエラー503!!!!!!!!!!!!!!!!!!!!!!?
                             throw new Error(`Server Error: ${res.status}`);
                         }
                         
-                        // 成功したらデータを取得してループを抜ける
+                        // 成功したらループを抜ける
                         responseJson = await res.json();
                         break; 
 
@@ -1108,7 +1108,7 @@
     
     
     </script>
-    <!-- React Voting Logic -->
+    <!-- ここからReactの投票ギミック-->
     <script type="text/babel">
         const { useState, useEffect } = React;
 
@@ -1118,10 +1118,10 @@
             const [battleId, setBattleId] = useState(null);
             const [isLoading, setIsLoading] = useState(false);
 
-            // 現在のバトルIDを監視して、新しいバトルなら投票権を復活させる
+            //新しいバトルなら投票権復活
             useEffect(() => {
                 const checkBattle = () => {
-                    // window.currentBattleId は後述のフックで設定されます
+                    
                     if (window.currentBattleId !== battleId) {
                         setBattleId(window.currentBattleId);
                         setHasVoted(false);
@@ -1193,7 +1193,7 @@
                         />
                     </div>
 
-                    {/* 投票ボタンエリア */}
+                    {/* 投票ボタン */}
                     {!hasVoted ? (
                         <div className="grid grid-cols-2 gap-4">
                             <button 
@@ -1223,22 +1223,21 @@
             );
         };
 
-        // Reactのマウント処理
+        // Reactのマウント
         const rootElement = document.getElementById('react-vote-root');
         if (rootElement) {
             const root = ReactDOM.createRoot(rootElement);
             root.render(<VoteComponent />);
         }
 
-        // 既存のコードを変更せずにフックするための処理
-        // バトル開始時に一意のIDを生成し、投票権をリセットするためのトリガーとする
+        // バトル開始時にIDを生成し、投票権をリセットするためのトリガーとする
         const originalStartSequence = window.startSequence;
         window.startSequence = () => {
-            window.currentBattleId = Date.now(); // バトルIDを更新
+            window.currentBattleId = Date.now(); // ID更新
             if (originalStartSequence) originalStartSequence();
         };
 
-        // 初回ロード時用のID設定
+        // 初回ロード用のID
         window.currentBattleId = Date.now();
     </script>
 </body>
