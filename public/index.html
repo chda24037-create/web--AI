@@ -806,12 +806,21 @@
         };
 
         async function triggerAITurn(isFirstStrike, userLastText) {
-            state.isProcessing = true; const btn = document.getElementById('attack-btn'); const input = document.getElementById('user-input'); btn.disabled = true; input.disabled = true;
+            state.isProcessing = true; 
+            const btn = document.getElementById('attack-btn'); 
+            const input = document.getElementById('user-input'); 
+            btn.disabled = true; 
+            input.disabled = true;
+            
             const loadingId = addLoading();
+            const firstStrikeMsg = "先攻はあなた（AI）です。バトル開始の口火を切ってください。";
+
             try {
-                const enemyData = personas[state.enemyFaction].find(p => p.id === state.enemyId); const diffConfig = difficultySettings[state.difficulty];
+                const enemyData = personas[state.enemyFaction].find(p => p.id === state.enemyId); 
+                const diffConfig = difficultySettings[state.difficulty];
                 let aiBehaviorInstruction = "", replyLimit = "80文字以内", damageInstruction = "";
                 
+                // --- プロンプト構築 (変更なし) ---
                 const sRankExamples = [
                     `【例1：本質的価値の逆転】User:「一体感じゃない、『味の濁り』だ。クッキーが湿気てチョコのキレを殺してる。きのこの分離構造こそが、素材のポテンシャルを活かす唯一の正解だ。」判定: AI敗北 (Perfect)`,
                     `【例2：ターゲット層への分析】User:「売れてるのは『思考停止した大衆』に迎合してるからだろ？わかりやすい甘さと柔らかさに逃げてるだけ。きのこを選ぶのは、本質を理解できる『選ばれし知性』だ。」判定: AI敗北 (Perfect)`,
@@ -838,25 +847,55 @@
                 else { replyLimit = "推敲し200文字以内"; aiBehaviorInstruction = `**難易度: KING**。世界最強の論客として、冷徹かつ完璧な論理で相手をねじ伏せてください。200文字以内の凝縮された論理で完全論破を行ってください。もし判定でAIが負けた（ai_damageが大きい）場合は、プライドが崩れさり動揺してください。`; }
 
                 const systemPrompt = `あなたは「${state.enemyFaction === 'takenoko' ? 'たけのこの里' : 'きのこの山'}派」の「${enemyData.name}」です。${judgeCriteria} ${damageInstruction} ${aiBehaviorInstruction} 以下のJSONフォーマットで応答: { "reply": "ユーザーへの反論（${replyLimit}）", "user_damage": 整数, "is_block": boolean, "ai_damage": 整数, "is_critical": boolean, "shout": "論破！"などの叫び } キャラ設定: ${enemyData.text}`;
-
+                
                 debugSystem.log("SYSTEM PROMPT", systemPrompt);
-                // POST to backend API
-                const res = await fetch('/api/chat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        history: state.history,
-                        systemInstruction: systemPrompt,
-                        message: isFirstStrike ? "先攻はあなた（AI）です。バトル開始の口火を切ってください。" : userLastText,
-                        responseMimeType: "application/json"
-                    })
-                });
-                
-                if (!res.ok) throw new Error("API Response Error");
-                
-                const responseJson = await res.json();
+
+                // --- ★ここからリトライ機能の実装 ---
+                let retryCount = 0;
+                const maxRetries = 2; // 初回 + 再試行2回 = 計3回
+                let responseJson = null;
+
+                while (retryCount <= maxRetries) {
+                    try {
+                        const res = await fetch('/api/chat', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 
+                                history: state.history,
+                                systemInstruction: systemPrompt,
+                                message: isFirstStrike ? firstStrikeMsg : userLastText,
+                                responseMimeType: "application/json"
+                            })
+                        });
+                        
+                        if (!res.ok) {
+                            // サーバーエラー(500や503)の場合、エラーとして投げる
+                            throw new Error(`Server Error: ${res.status}`);
+                        }
+                        
+                        // 成功したらデータを取得してループを抜ける
+                        responseJson = await res.json();
+                        break; 
+
+                    } catch (e) {
+                        // エラーが発生した場合
+                        if (retryCount < maxRetries) {
+                            // まだリトライ回数が残っている場合
+                            retryCount++;
+                            const waitTime = 5000; // 5秒
+                            debugSystem.log("RETRY", `サーバー混雑(503)のため待機中... ${waitTime/1000}秒後に再試行します (${retryCount}/${maxRetries})`);
+                            
+                            // 5秒待機
+                            await wait(waitTime);
+                        } else {
+                            // 回数切れの場合、ここで本当のエラーとして処理を中断させる
+                            throw e; 
+                        }
+                    }
+                }
+                // --- ★リトライ機能ここまで ---
+
                 const responseText = responseJson.text;
-                
                 debugSystem.log("AI RESPONSE", responseText);
                 const data = JSON.parse(responseText);
                 removeLoading(loadingId);
@@ -883,7 +922,11 @@
                 await wait(600);
                 if (data.is_critical || (diffConfig.isZeroSum && aiDmg >= diffConfig.totalDmg * 0.8)) { AudioSys.se.critical(); showCutIn(data.shout || "論破！"); await wait(1000); }
                 addMessage(data.reply, 'opponent', enemyData.name);
-                // Push AI response to history
+                
+                // 履歴更新
+                if (isFirstStrike) {
+                    state.history.push({ role: "user", parts: [{ text: firstStrikeMsg }] });
+                }
                 state.history.push({ role: "model", parts: [{ text: data.reply }] });
 
                 // Apply User Damage to Player HP
@@ -902,7 +945,11 @@
                 if (state.playerHP <= 0) { finishGame(false); }
 
             } catch (e) {
-                console.error(e); removeLoading(loadingId); addMessage("(システムエラー: 通信に失敗しました)", 'opponent'); debugSystem.log("ERROR", e.toString());
+                // リトライも全て失敗した時に初めてここに来る
+                console.error(e); 
+                removeLoading(loadingId); 
+                addMessage("(システムエラー: サーバーが混み合っています。時間を置いて再読込してください🍄)", 'opponent'); 
+                debugSystem.log("ERROR", e.toString());
             } finally {
                 state.isProcessing = false;
                 if (!state.isGameFinished && state.playerHP > 0 && state.enemyHP > 0) { btn.disabled = false; input.disabled = false; input.placeholder = "言葉の武器で攻撃せよ..."; input.focus(); }
