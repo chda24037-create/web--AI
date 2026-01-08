@@ -1,4 +1,4 @@
-// test.js
+// APIキーの動作確認用
 require('dotenv').config();
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
@@ -12,7 +12,7 @@ const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
 async function test() {
   try {
     const result = await model.generateContent("こんにちは");
-    console.log("✅ 成功！APIキーは有効です");
+    console.log("✅ 成功！APIキーは有効です。");
     console.log("レスポンス:", result.response.text());
   } catch (error) {
     console.error("❌ エラー:", error.message);

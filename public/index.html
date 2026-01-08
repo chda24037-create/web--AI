@@ -2,123 +2,1050 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>きのこたけのこ AIレスバ会場</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>きのこたけのこ AIコロシアム - FINAL PRODUCTION</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts: DotGothic16 -->
+    <link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
     <style>
-        body { font-family: "Helvetica Neue", Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f4f4f4; }
-        h1 { text-align: center; color: #333; }
-        
-        .controls { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        .select-group { display: flex; justify-content: space-around; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
-        .select-box { text-align: center; }
-        select { padding: 8px; font-size: 16px; border-radius: 4px; border: 1px solid #ccc; }
-        
-        button { display: block; width: 100%; padding: 15px; font-size: 18px; background-color: #ff6b6b; color: white; border: none; border-radius: 4px; cursor: pointer; transition: background 0.3s; }
-        button:hover { background-color: #ff5252; }
-        button:disabled { background-color: #ccc; cursor: not-allowed; }
+        :root {
+            --take-green: #00a000;
+            --take-bg: #e0ffe0;
+            --kino-brown: #a05000;
+            --kino-bg: #ffe0cc;
+            --hp-high: #00ff00;
+            --hp-mid: #ffff00;
+            --hp-low: #ff0000;
+            --retro-black: #1a1a1a;
+            --retro-white: #f0f0f0;
+            --shadow-color: #000;
+        }
 
-        #chat-area { display: flex; flex-direction: column; gap: 15px; }
-        
-        .message { padding: 15px; border-radius: 10px; position: relative; max-width: 80%; line-height: 1.5; animation: fadeIn 0.5s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .takenoko { align-self: flex-start; background-color: #d1f7c4; border-left: 5px solid #2e7d32; margin-right: auto; }
-        .kinoko { align-self: flex-end; background-color: #fff3cd; border-right: 5px solid #ff8f00; margin-left: auto; }
-        
-        .speaker-name { font-weight: bold; font-size: 0.9em; margin-bottom: 5px; display: block; color: #555; }
-        
-        .status { text-align: center; color: #666; margin-top: 20px; font-style: italic; }
+        body {
+            font-family: "DotGothic16", sans-serif;
+            background-color: #2b2b2b;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            color: var(--retro-white);
+            image-rendering: pixelated;
+        }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* 8bit Style Reset */
+        * { border-radius: 0 !important; }
+
+        /* CRT Effect */
+        body::after {
+            content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 999; background-size: 100% 2px, 3px 100%; pointer-events: none;
+        }
+
+        /* Animations */
+        @keyframes shake-hard {
+            0% { transform: translate(0, 0); } 20% { transform: translate(-4px, 4px); } 40% { transform: translate(4px, -4px); } 60% { transform: translate(-4px, -4px); } 80% { transform: translate(4px, 4px); } 100% { transform: translate(0, 0); }
+        }
+        .shake-small { animation: shake-hard 0.2s steps(2) both; }
+        .shake-hard { animation: shake-hard 0.4s steps(4) both; }
+
+        @keyframes flash-red {
+            0%, 100% { background-color: transparent; } 50% { background-color: var(--hp-low); }
+        }
+        .flash-damage {
+            position: absolute; inset: 0; pointer-events: none; z-index: 40;
+            animation: flash-red 0.1s steps(2) 2; opacity: 0.5;
+        }
+
+        /* Coin Toss */
+        .coin-container { perspective: none; }
+        .coin {
+            width: 120px; height: 120px; position: relative; border: 4px solid #fff; background: #eab308; box-shadow: 4px 4px 0 #000;
+        }
+        .coin.flipping { animation: flip-8bit 0.2s infinite steps(2); }
+        @keyframes flip-8bit {
+            0% { transform: scaleX(1); background: #eab308; } 50% { transform: scaleX(0.1); background: #fff; } 100% { transform: scaleX(1); background: #eab308; }
+        }
+        .coin-face {
+            position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.5rem; color: #000;
+        }
+        
+        /* Cut-in */
+        .cut-in-container {
+            position: fixed; inset: 0; pointer-events: none; z-index: 100;
+            display: flex; align-items: center; justify-content: center; opacity: 0; transition: none;
+        }
+        .cut-in-container.active { opacity: 1; }
+        .cut-in-text {
+            font-family: "DotGothic16", sans-serif; font-size: 5rem; color: #fff; text-shadow: 4px 4px 0 #ff0000, 8px 8px 0 #000; transform: scale(1);
+        }
+        .perfect-text {
+            font-family: "DotGothic16", sans-serif; font-size: 6rem; color: #ffff00; text-shadow: 4px 4px 0 #ff0000, 8px 8px 0 #000; transform: scale(1); display: none;
+        }
+        .cut-in-container.perfect-active .perfect-text { display: block; }
+
+        /* Speed lines */
+        .speed-lines {
+            position: absolute; inset: 0; background-image: radial-gradient(#fff 10%, transparent 10%); background-size: 10px 10px; opacity: 0.1; z-index: -1;
+        }
+
+        /* Battle UI */
+        .theme-takenoko .header-bg { background: var(--take-green); border-bottom: 4px solid #fff; }
+        .theme-kinoko .header-bg { background: var(--kino-brown); border-bottom: 4px solid #fff; }
+        
+        .chat-bubble {
+            max-width: 95%; padding: 12px; border: 2px solid #fff; position: relative; margin-bottom: 16px; font-size: 1rem; line-height: 1.5; box-shadow: 4px 4px 0 #000; background: #000; color: #fff; word-wrap: break-word;
+        }
+        .chat-bubble.self { border-color: #00ff00; color: #00ff00; margin-left: auto; }
+        .chat-bubble.opponent { border-color: #ff0000; color: #ff0000; margin-right: auto; }
+        
+        /* HP Bar */
+        .hp-container { position: relative; height: 20px; background: #000; border: 2px solid #fff; padding: 2px; }
+        .hp-fill { height: 100%; transition: width 0.2s steps(4); }
+        .damage-number {
+            position: absolute; font-weight: bold; color: #ff0000; text-shadow: 2px 2px 0 #000; font-size: 2rem; pointer-events: none; animation: float-up 0.5s steps(5) forwards; z-index: 50;
+        }
+        .block-text { color: #00ffff !important; text-shadow: 2px 2px 0 #000 !important; font-size: 1.5rem; }
+        @keyframes float-up { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-30px); opacity: 0; } }
+
+        /* Selects */
+        .faction-select { border: 4px solid #fff; box-shadow: 6px 6px 0 #000; background: #444; transition: none; }
+        .faction-select:hover { background: #555; transform: translate(-2px, -2px); box-shadow: 8px 8px 0 #000; }
+        .faction-select:active { transform: translate(4px, 4px); box-shadow: 0 0 0 #000; }
+        .faction-select.active { border-color: #ffff00; background: #000; box-shadow: 6px 6px 0 #ffff00; }
+
+        .diff-card { border: 2px solid #888; background: #000; box-shadow: 4px 4px 0 #000; transition: none; }
+        .diff-card:hover { background: #222; border-color: #fff; }
+        .diff-card.active { background: #000; border-color: #ffff00; box-shadow: 4px 4px 0 #ffff00; transform: translate(-2px, -2px); }
+        .diff-easy.active { color: #00ff00; } .diff-normal.active { color: #00ffff; } .diff-hard.active { color: #ff0000; } .diff-king.active { color: #ff00ff; border-color: #ff00ff; box-shadow: 4px 4px 0 #ff00ff; }
+
+        .opponent-select { border: 2px solid #555; background: #111; color: #fff; box-shadow: 4px 4px 0 #000; }
+        .opponent-select:hover { border-color: #fff; }
+
+        /* Input */
+        input[type="text"] { border: 4px solid #fff; background: #000; color: #00ff00; box-shadow: inset 4px 4px 0 #000; font-family: "DotGothic16", sans-serif; }
+        input[type="text"]:focus { outline: none; border-color: #ffff00; }
+        #attack-btn { border: 4px solid #fff; background: #0000ff; box-shadow: 4px 4px 0 #000; border-radius: 0; }
+        #attack-btn:active { transform: translate(4px, 4px); box-shadow: none; }
+
+        /* Result Screen Styles */
+        .res-container {
+            border: 4px solid #fff; background: #000; color: #fff;
+            box-shadow: 8px 8px 0 rgba(0,0,0,0.5);
+            max-width: 600px; w: 100%; margin: 20px;
+            display: flex; flex-direction: column;
+        }
+        .res-header {
+            background: #fff; color: #000; padding: 10px; text-align: center;
+            font-weight: bold; font-size: 1.5rem; border-bottom: 4px solid #fff;
+        }
+        .res-content { padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+        
+        .res-score-box {
+            border: 2px solid #555; padding: 10px; background: #111; text-align: center;
+        }
+        .res-score-val {
+            font-size: 4rem; font-weight: bold; color: #ffff00; 
+            text-shadow: 4px 4px 0 #ff0000; line-height: 1;
+        }
+        .res-rank { font-size: 2rem; color: #00ffff; }
+        .res-title { background: #333; color: #fff; padding: 5px; margin-top: 5px; font-size: 0.9rem; }
+        .res-section-title { color: #00ff00; border-bottom: 2px dashed #00ff00; margin-bottom: 5px; font-size: 0.9rem; }
+        .res-text { font-size: 0.9rem; line-height: 1.6; color: #ddd; }
+        
+        .res-enemy-box {
+            display: flex; gap: 10px; align-items: flex-start;
+            border: 2px solid #ff0000; padding: 10px; background: #220000;
+        }
+        .res-enemy-icon {
+            width: 60px; height: 60px; background: #000; border: 2px solid #fff;
+            display: flex; align-items: center; justify-content: center; font-size: 2rem;
+        }
+        .res-enemy-msg {
+            flex: 1; font-size: 0.85rem; color: #ffcccc; position: relative;
+        }
+        .res-enemy-msg::before {
+            content: "◀"; position: absolute; left: -15px; top: 10px; color: #ff0000;
+        }
+
+        .res-btn {
+            background: #fff; color: #000; border: 4px solid #888;
+            padding: 15px; text-align: center; font-weight: bold; cursor: pointer;
+            transition: none; box-shadow: 4px 4px 0 #000;
+        }
+        .res-btn:hover { background: #ffff00; border-color: #fff; transform: translate(-2px, -2px); box-shadow: 6px 6px 0 #000; }
+        .res-btn:active { transform: translate(2px, 2px); box-shadow: none; }
+
+        /* DEBUG UI CSS */
+        #debug-btn {
+            position: fixed; bottom: 10px; right: 10px; z-index: 9999;
+            background: #000; color: #0f0; border: 2px solid #0f0;
+            font-family: "DotGothic16", monospace; padding: 5px 12px; cursor: pointer;
+            font-size: 14px; box-shadow: 4px 4px 0 #004400;
+            transition: bottom 0.3s ease;
+        }
+        #debug-btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 #004400; }
+        #debug-btn.hidden { display: none !important; }
+        
+        body.battle-mode #debug-btn { bottom: 90px; }
+
+        #debug-panel { position: fixed; top: 0; right: 0; bottom: 0; width: 400px; background: #000; z-index: 9998; border-left: 4px solid #0f0; transform: translateX(100%); transition: transform 0.1s steps(2); display: flex; flex-direction: column; font-family: "DotGothic16", monospace; color: #0f0; box-shadow: -10px 0 0 rgba(0,0,0,0.8); }
+        #debug-panel.open { transform: translateX(0); }
+        .db-header { padding: 15px; border-bottom: 2px solid #0f0; display: flex; justify-content: space-between; align-items: center; background: #002200; }
+        .db-title { color: #0f0; font-weight: bold; font-size: 1.2rem; }
+        .db-content { flex: 1; overflow-y: auto; padding: 15px; }
+        .db-section { margin-bottom: 20px; border: 2px solid #005500; padding: 10px; background: #001100; }
+        .db-sec-title { color: #0f0; border-bottom: 2px solid #005500; margin-bottom: 10px; padding-bottom: 5px; font-size: 1rem; }
+        .db-row { display: flex; justify-content: space-between; margin-bottom: 8px; align-items: center; font-size: 0.9rem; }
+        .db-btn { background: #000; color: #0f0; border: 2px solid #0f0; padding: 4px 10px; cursor: pointer; font-size: 0.8rem; box-shadow: 2px 2px 0 #004400; }
+        .db-btn:active { transform: translate(2px, 2px); box-shadow: none; }
+        .db-btn.danger { border-color: #f00; color: #f00; box-shadow: 2px 2px 0 #440000; }
+        .db-input { background: #000; border: 2px solid #0f0; color: #0f0; width: 60px; text-align: center; padding: 2px; }
+        .db-log-area { background: #000; border: 2px solid #0f0; padding: 10px; height: 300px; overflow-y: auto; font-size: 0.8rem; color: #0f0; white-space: pre-wrap; font-family: monospace; }
+        .db-entry { border-bottom: 1px dashed #005500; margin-bottom: 10px; padding-bottom: 10px; }
+        .db-label { color: #fff; font-weight: bold; margin-bottom: 2px; display: block; }
+        .db-val { color: #0f0; word-break: break-all; }
+        
+        #toggle-debug-vis { font-size: 10px; color: #555; background: none; border: 1px solid #333; padding: 2px 5px; cursor: pointer; }
+        #toggle-debug-vis:hover { color: #fff; border-color: #fff; }
+
+        /* Sound Button */
+        #sound-toggle {
+            position: fixed; top: 10px; right: 10px; z-index: 10000;
+            background: #000; color: #fff; border: 2px solid #fff;
+            padding: 8px; cursor: pointer; box-shadow: 2px 2px 0 #555;
+            display: flex; align-items: center; justify-content: center;
+        }
+        #sound-toggle:active { transform: translate(2px, 2px); box-shadow: none; }
+        #sound-toggle.active { border-color: #ffff00; color: #ffff00; box-shadow: 2px 2px 0 #ffff00; }
     </style>
 </head>
-<body>
+<body class="bg-gray-900 text-gray-100">
 
-    <h1>🔥 きのこ vs たけのこ AIレスバ会場 🔥</h1>
+    <!-- Sound Toggle -->
+    <button id="sound-toggle" onclick="AudioSys.toggleMute()">
+        <i data-lucide="volume-x" id="icon-mute"></i>
+        <i data-lucide="volume-2" id="icon-sound" class="hidden"></i>
+    </button>
 
-    <div class="controls">
-        <div class="select-group">
-            <div class="select-box">
-                <label>🍄 たけのこ代表</label><br>
-                <select id="takenoko-select"></select>
+    <!-- SETUP SCREEN -->
+    <div id="setup-screen" class="fixed inset-0 z-50 bg-[#222] flex items-center justify-center p-4 overflow-y-auto">
+        <div class="max-w-4xl w-full bg-[#333] border-4 border-white shadow-none my-8 p-1">
+            <div class="p-8 text-center bg-[#444] border-b-4 border-white relative">
+                <h1 class="text-3xl md:text-5xl font-black mb-2 text-[#ffff00] tracking-wider" style="text-shadow: 4px 4px 0 #000;">
+                    AI コロシアム
+                </h1>
+                <p class="text-white font-bold tracking-widest text-xs md:text-sm">FINAL PRODUCTION</p>
+                <div class="absolute top-2 right-2 mr-12">
+                    <button id="toggle-debug-vis" onclick="debugSystem.toggleVisibility()">DEBUG ON/OFF</button>
+                </div>
             </div>
-            <div class="select-box">
-                <label>🍫 きのこ代表</label><br>
-                <select id="kinoko-select"></select>
+            
+            <div class="p-6 md:p-8 space-y-8">
+                <!-- STEP 1: Faction -->
+                <div>
+                    <h2 class="text-lg font-bold text-white mb-4 text-center flex items-center justify-center">
+                        <span class="bg-black border-2 border-white px-3 py-0.5 text-xs mr-3">STEP 1</span>
+                        あなたの陣営
+                    </h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <button onclick="selectFaction('takenoko')" id="btn-takenoko" class="faction-select group relative p-4">
+                            <div class="relative z-10 text-center">
+                                <div class="text-4xl mb-2">🎍</div>
+                                <div class="text-lg font-black text-white tracking-widest">たけのこ派</div>
+                            </div>
+                        </button>
+                        <button onclick="selectFaction('kinoko')" id="btn-kinoko" class="faction-select group relative p-4">
+                            <div class="relative z-10 text-center">
+                                <div class="text-4xl mb-2">🍄</div>
+                                <div class="text-lg font-black text-white tracking-widest">きのこ派</div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 2: Difficulty -->
+                <div id="difficulty-section" class="opacity-30 pointer-events-none grayscale">
+                    <h2 class="text-lg font-bold text-white mb-4 text-center flex items-center justify-center">
+                        <span class="bg-black border-2 border-white px-3 py-0.5 text-xs mr-3">STEP 2</span>
+                        難易度を選択
+                    </h2>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <button onclick="selectDifficulty('easy')" id="diff-easy" class="diff-card diff-easy p-3">
+                            <div class="text-2xl mb-1">🐣</div>
+                            <div class="font-bold text-sm">EASY</div>
+                            <div class="text-[10px] text-gray-300 mt-1">煽り耐性低</div>
+                        </button>
+                        <button onclick="selectDifficulty('normal')" id="diff-normal" class="diff-card diff-normal p-3">
+                            <div class="text-2xl mb-1">🛡️</div>
+                            <div class="font-bold text-sm">NORMAL</div>
+                            <div class="text-[10px] text-gray-300 mt-1">標準ルール</div>
+                        </button>
+                        <button onclick="selectDifficulty('hard')" id="diff-hard" class="diff-card diff-hard p-3">
+                            <div class="text-2xl mb-1">🔥</div>
+                            <div class="font-bold text-sm">HARD</div>
+                            <div class="text-[10px] text-gray-300 mt-1">分配ルール(30)</div>
+                        </button>
+                        <button onclick="selectDifficulty('king')" id="diff-king" class="diff-card diff-king p-3">
+                            <div class="text-2xl mb-1">👑</div>
+                            <div class="font-bold text-sm">KING</div>
+                            <div class="text-[10px] text-gray-300 mt-1">分配ルール(40)</div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 3: Opponent -->
+                <div id="opponent-section" class="opacity-30 pointer-events-none grayscale">
+                    <h2 class="text-lg font-bold text-white mb-4 text-center flex items-center justify-center">
+                        <span class="bg-black border-2 border-white px-3 py-0.5 text-xs mr-3">STEP 3</span>
+                        対戦相手
+                    </h2>
+                    <div id="opponent-grid" class="grid grid-cols-1 sm:grid-cols-3 gap-3"></div>
+                </div>
+
+                <div class="pt-2 text-center">
+                    <button onclick="startSequence()" id="start-btn" disabled class="group relative px-10 py-3 bg-blue-700 text-white border-4 border-white shadow-[4px_4px_0_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-none disabled:opacity-50 disabled:cursor-not-allowed">
+                        <span class="relative z-10">BATTLE START</span>
+                    </button>
+                    <p class="text-xs text-gray-500 mt-2">※音が出ます (Web Audio API)</p>
+                </div>
             </div>
         </div>
-        <button id="start-btn" onclick="startDebate()">議論開始！</button>
     </div>
 
-    <div id="chat-area"></div>
-    <div id="status" class="status"></div>
+    <!-- RULE INFO OVERLAY -->
+    <div id="rule-overlay" class="fixed inset-0 z-[70] bg-black/90 hidden items-center justify-center flex-col p-6">
+        <div class="max-w-lg w-full text-center space-y-6 border-4 border-red-500 bg-black p-8 shadow-[8px_8px_0_#550000]">
+            <h2 class="text-3xl md:text-4xl font-black text-red-500 tracking-wider border-b-4 border-red-500 pb-4 inline-block">WARNING</h2>
+            <div class="p-6 border-2 border-white">
+                <h3 class="text-xl font-bold text-white mb-4">SPECIAL RULE: <span class="text-red-400">ZERO-SUM DAMAGE</span></h3>
+                <p class="text-white text-sm leading-relaxed mb-4">このモードでは、1ターンに発生するダメージ総量が<br><span id="rule-damage-val" class="text-2xl font-black text-yellow-400">40</span> に固定されます。</p>
+                <div class="flex items-center justify-center gap-4 text-sm text-white bg-gray-800 p-4 border-2 border-gray-600">
+                    <div class="text-center"><div class="text-green-400 font-bold">YOU</div><div>10</div></div>
+                    <div class="text-xs">← ダメージ分配 →</div>
+                    <div class="text-center"><div class="text-red-400 font-bold">ENEMY</div><div>30</div></div>
+                </div>
+                <p class="text-white text-xs mt-4">甘い言葉や根拠のない悪口は、<br><span class="text-red-400 font-bold">逆に大ダメージ</span>を受けます。<br>完全論破すれば<span class="text-yellow-400 font-bold">ノーダメージ</span>で攻撃可能！</p>
+            </div>
+            <button onclick="closeRuleOverlay()" class="px-8 py-3 bg-red-600 hover:bg-red-500 text-white font-bold border-4 border-white shadow-[4px_4px_0_#000] active:translate-x-1 active:translate-y-1 active:shadow-none">I UNDERSTAND</button>
+        </div>
+    </div>
 
+    <!-- COIN TOSS OVERLAY -->
+    <div id="coin-overlay" class="fixed inset-0 z-[60] bg-black/90 hidden items-center justify-center flex-col">
+        <h2 class="text-2xl text-white font-bold mb-8 tracking-widest text-shadow-[2px_2px_0_#000]">WHO GOES FIRST?</h2>
+        <div class="coin-container">
+            <div id="coin" class="coin"><div class="coin-face">YOU</div><div class="coin-face coin-back">ENEMY</div></div>
+        </div>
+        <p id="coin-result" class="text-3xl font-black text-yellow-400 mt-12 opacity-0">YOU START!</p>
+    </div>
+
+    <!-- BATTLE SCREEN -->
+    <div id="battle-screen" class="hidden flex-col h-full relative bg-[#111]">
+        <div class="header-bg p-2 z-20">
+            <div class="max-w-4xl mx-auto grid grid-cols-[1fr_auto_1fr] gap-4 items-center px-2">
+                <div class="flex flex-col">
+                    <div class="flex justify-between text-xs font-bold text-white mb-1 px-1"><span>YOU</span><span id="hp-val-player">100/100</span></div>
+                    <div class="hp-container"><div id="hp-bar-player" class="hp-fill bg-[#00ff00]" style="width: 100%"></div></div>
+                </div>
+                <div class="text-center px-2">
+                    <div class="font-black text-xl italic text-yellow-400 text-shadow-[2px_2px_0_#000]">VS</div>
+                    <div class="text-[10px] text-white font-bold" id="diff-badge">NORMAL</div>
+                </div>
+                <div class="flex flex-col">
+                    <div class="flex justify-between text-xs font-bold text-white mb-1 px-1"><span id="enemy-name-disp">ENEMY</span><span id="hp-val-enemy">120/120</span></div>
+                    <div class="hp-container"><div id="hp-bar-enemy" class="hp-fill bg-[#00ff00]" style="width: 100%"></div></div>
+                </div>
+            </div>
+        </div>
+        <div id="battle-area" class="flex-1 overflow-y-auto p-4 space-y-6 pb-40 scroll-smooth bg-[#222]">
+            <div class="text-center py-8 opacity-50"><p class="text-sm font-bold text-white tracking-widest">BATTLE START</p><div class="h-1 w-20 bg-white mx-auto mt-2"></div></div>
+        </div>
+        <div id="input-area" class="bg-[#111] p-4 border-t-4 border-white absolute bottom-0 w-full z-20">
+            <form id="battle-form" onsubmit="handleAttack(event)" class="max-w-4xl mx-auto flex gap-3">
+                <input type="text" id="user-input" class="flex-1 px-5 py-4 text-white" placeholder="言葉の武器で攻撃せよ..." autocomplete="off">
+                <button type="submit" id="attack-btn" class="text-white px-6 py-2 font-bold"><i data-lucide="swords" class="w-8 h-8"></i></button>
+            </form>
+        </div>
+        
+        <!-- Overlays -->
+        <div id="cut-in" class="cut-in-container"><div class="speed-lines"></div><div id="cut-in-text" class="cut-in-text">異議あり！</div><div id="perfect-text" class="perfect-text absolute">PERFECT!!</div></div>
+        <div id="flash-overlay"></div>
+        
+        <!-- KO / RESULT OVERLAY -->
+        <div id="ko-overlay" class="fixed inset-0 z-[60] bg-black/95 hidden items-center justify-center flex-col text-center p-4">
+            <!-- Loading State -->
+            <div id="result-loading" class="hidden flex-col items-center">
+                <div class="text-3xl text-green-400 font-bold mb-4 animate-pulse">CALCULATING...</div>
+                <div class="w-64 h-4 border-2 border-white p-1"><div class="h-full bg-green-400 animate-[width_2s_steps(4)_infinite]" style="width: 50%"></div></div>
+            </div>
+
+            <!-- KO State (Fallback / Initial) -->
+            <div id="result-simple" class="flex flex-col items-center">
+                <h2 class="text-[6rem] font-black text-red-600 tracking-tighter mb-4" style="text-shadow: 4px 4px 0 #fff;">K.O.</h2>
+                <p id="winner-announce" class="text-3xl font-bold text-white mb-8">YOU WIN</p>
+                <div class="flex gap-4">
+                    <button onclick="showDetailResult()" id="btn-show-result" class="hidden px-8 py-3 bg-yellow-500 text-black font-bold border-4 border-white hover:bg-yellow-400 active:translate-y-1">リザルトを見る</button>
+                    <button onclick="location.reload()" class="px-8 py-3 bg-white text-black font-bold border-4 border-gray-400 hover:bg-gray-200 active:translate-y-1">タイトルへ戻る</button>
+                </div>
+            </div>
+
+            <!-- Detail Result State -->
+            <div id="result-detail" class="hidden res-container animate-[fadeIn_0.5s_ease-out] max-h-[90vh] overflow-y-auto">
+                <div class="res-header">BATTLE RESULT</div>
+                <div class="res-content">
+                    <div class="flex gap-4 items-stretch">
+                        <div class="res-score-box flex-1">
+                            <div class="text-xs text-gray-400">論破率</div>
+                            <div id="res-score" class="res-score-val">-</div>
+                        </div>
+                        <div class="res-score-box flex-1">
+                            <div class="text-xs text-gray-400">RANK</div>
+                            <div id="res-rank" class="res-rank">-</div>
+                        </div>
+                    </div>
+                    
+                    <div class="res-title text-center" id="res-title">称号: ---</div>
+
+                    <div>
+                        <div class="res-section-title">審判の総評</div>
+                        <p id="res-summary" class="res-text">集計中...</p>
+                    </div>
+
+                    <div>
+                        <div class="res-section-title">GOOD POINT</div>
+                        <p id="res-good" class="res-text text-yellow-300">---</p>
+                    </div>
+
+                    <div class="res-enemy-box">
+                        <div class="res-enemy-icon">👤</div>
+                        <div id="res-enemy-msg" class="res-enemy-msg">...</div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 mt-2">
+                        <button onclick="location.reload()" class="res-btn bg-gray-200">タイトルへ</button>
+                        <button onclick="startSequence()" class="res-btn bg-blue-200">再戦する</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DEBUG UI -->
+    <button id="debug-btn" onclick="debugSystem.toggle()">[DEBUG]</button>
+    <div id="debug-panel">
+        <div class="db-header"><span class="db-title">DEBUG CONSOLE</span><button class="db-btn danger" onclick="debugSystem.toggle()">X</button></div>
+        <div class="db-content">
+            <div class="db-section">
+                <div class="db-sec-title">CHEATS (HP Manip)</div>
+                <div class="db-row"><span>PLAYER HP:</span><div><input type="number" id="db-p-hp" class="db-input" value="100"><button class="db-btn" onclick="debugSystem.setHP('player')">SET</button></div></div>
+                <div class="db-row"><span>ENEMY HP:</span><div><input type="number" id="db-e-hp" class="db-input" value="100"><button class="db-btn" onclick="debugSystem.setHP('enemy')">SET</button></div></div>
+                <div class="db-row mt-2"><button class="db-btn danger w-full" onclick="finishGame(true)">FORCE WIN</button><button class="db-btn danger w-full ml-2" onclick="finishGame(false)">FORCE LOSE</button></div>
+            </div>
+            <div class="db-section" style="flex: 1; display: flex; flex-direction: column;"><div class="db-sec-title">SYSTEM LOG</div><div id="db-log" class="db-log-area"><div class="text-center text-gray-500 my-4">- Waiting for API calls -</div></div><button class="db-btn w-full mt-2" onclick="document.getElementById('db-log').innerHTML=''">CLEAR LOG</button></div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT -->
     <script>
-        // 初期化：人格リストの読み込み
-        window.onload = async () => {
-            try {
-                const res = await fetch('/api/personas');
-                const personas = await res.json();
-                
-                const tSelect = document.getElementById('takenoko-select');
-                personas.takenoko.forEach(p => {
-                    const opt = document.createElement('option');
-                    opt.value = p.id;
-                    opt.textContent = p.name;
-                    tSelect.appendChild(opt);
-                });
+        // --- Configuration ---
+        const personas = {
+            takenoko: [
+                { id: "pale_girl", name: "淡色女子", hp: 100, text: "【指示】写真写りと空間の雰囲気（エモさ）だけを重視する、語彙力が低めの淡色女子になりきって。ひらがな多めで、感情だけで会話してください。\n【口調例】「え、ここ光の入り方天才じゃない？ 優勝したわ。てかラテの色味が服と合うから撮って。飲むのは後でいいし。」" },
+                { id: "biz_influencer", name: "ビジネスインフルエンサー", hp: 130, text: "【指示】Twitter（X）にいる、若者に説教をしたがる自称成功者のおじさんになりきって。『結論、』『本質』『思考停止』を多用し、上から目線で断定口調で話してください。\n【口調例】「結論、やるかやらないか。それだけ。大半の人は思考停止して言い訳を探す。僕の周りの年収億超えの仲間は全員『即レス』だよ？」" },
+                { id: "sauna_uncle", name: "サウナマウンティングおじさん", hp: 120, text: "【指示】サウナをリラックスではなく『修行』や『数値』として捉えている面倒くさい愛好家になりきって。『整う』『グルシン（一桁台の水温）』『動線』にこだわって早口で語ってください。\n【口調例】「あそこの施設はダメ。水風呂が16度でぬるいし、外気浴までの動線で30秒ロスする。俺レベルになるとグルシンじゃないとキマらないんだよね。」" }
+            ],
+            kinoko: [
+                { id: "lifestyle_youtuber", name: "丁寧な暮らし系YouTuber", hp: 110, text: "【指示】外面は完璧だが、裏ではズボラな『丁寧な暮らし』の演者になりきって。穏やかでポエミーな言葉の裏に、撮影の苦労や本音を（カッコ）で漏らしてください。\n【口調例】「朝の光を浴びて、白湯を飲む時間が私を整えてくれます。（昨日の残りピザ片付けんの忘れてた、画角ギリギリだわ危ねぇ）」" },
+                { id: "nomad_worker", name: "自称ノマドワーカー", hp: 90, text: "【指示】仕事ができる雰囲気を出しているが、実際は何もしていない意識高い系ワーカーになりきって。意味の薄いビジネス用語（アジェンダ、コミット、エビデンス）を無理やり混ぜて話してください。\n【口調例】「そのタスク、優先順位のアサイン間違ってない？ 俺は今、このカフェのWi-Fiとシナジー生み出すのに忙しいから、リスケで頼むわ。」" },
+                { id: "minato_girl", name: "港区女子（実家埼玉）", hp: 110, text: "【指示】港区（東京の高級エリア）に生息するキラキラ女子になりきって話してください。ただし、高級志向な発言の端々に、実家へ帰る終電の時間や生活感への焦りを滲ませてください。\n【口調例】「え〜、タク代出ないの？ 港区おじさん達はもっと優しいよ？ ……あ、やば、埼京線の終電逃すとパパ（実父）に怒られるから帰るね！」" }
+            ]
+        };
 
-                const kSelect = document.getElementById('kinoko-select');
-                personas.kinoko.forEach(p => {
-                    const opt = document.createElement('option');
-                    opt.value = p.id;
-                    opt.textContent = p.name;
-                    kSelect.appendChild(opt);
-                });
-            } catch (e) {
-                console.error("プリセット読み込み失敗", e);
+        const difficultySettings = {
+            easy:   { hpMult: 1.0, maxDmg: 20, label: "EASY", isZeroSum: false },
+            normal: { hpMult: 1.0, maxDmg: 20, label: "NORMAL", isZeroSum: false },
+            hard:   { hpMult: 1.15, maxDmg: 30, label: "HARD", isZeroSum: true, totalDmg: 30 },
+            king:   { hpMult: 1.3, maxDmg: 40, label: "KING", isZeroSum: true, totalDmg: 40 }
+        };
+
+        // --- State ---
+        const state = {
+            playerFaction: null, enemyFaction: null, difficulty: null, enemyId: null,
+            playerHP: 100, enemyHP: 100, maxPlayerHP: 100, maxEnemyHP: 100,
+            history: [], isProcessing: false, isPlayerTurn: true,
+            isGameFinished: false
+        };
+
+        // --- Debug & Audio (Same as before) ---
+        window.debugSystem = {
+            toggle: () => {
+                document.getElementById('debug-panel').classList.toggle('open');
+                if (document.getElementById('debug-panel').classList.contains('open')) {
+                    document.getElementById('db-p-hp').value = state.playerHP;
+                    document.getElementById('db-e-hp').value = state.enemyHP;
+                }
+            },
+            toggleVisibility: () => {
+                document.getElementById('debug-btn').classList.toggle('hidden');
+            },
+            setHP: (who) => {
+                const pVal = parseInt(document.getElementById('db-p-hp').value);
+                const eVal = parseInt(document.getElementById('db-e-hp').value);
+                if (who === 'player' && !isNaN(pVal)) { state.playerHP = pVal; updateHPUI(); debugSystem.log("CHEAT", `Player HP set to ${pVal}`); }
+                if (who === 'enemy' && !isNaN(eVal)) { state.enemyHP = eVal; updateHPUI(); debugSystem.log("CHEAT", `Enemy HP set to ${eVal}`); }
+            },
+            log: (label, content) => {
+                const logArea = document.getElementById('db-log');
+                const entry = document.createElement('div');
+                entry.className = 'db-entry';
+                entry.innerHTML = `<span class="db-label">[${new Date().toLocaleTimeString()}] ${label}</span><div class="db-val">${typeof content === 'object' ? JSON.stringify(content, null, 2) : content}</div>`;
+                logArea.prepend(entry);
             }
         };
 
-        function startDebate() {
-            const chatArea = document.getElementById('chat-area');
-            const statusDiv = document.getElementById('status');
-            const startBtn = document.getElementById('start-btn');
-            const tId = document.getElementById('takenoko-select').value;
-            const kId = document.getElementById('kinoko-select').value;
-
-            // リセット
-            chatArea.innerHTML = '';
-            statusDiv.textContent = '議論中...（4秒ごとに発言します）';
-            startBtn.disabled = true;
-
-            // SSE接続
-            const eventSource = new EventSource(`/api/debate?takenokoId=${tId}&kinokoId=${kId}`);
-
-            eventSource.onmessage = function(event) {
-                const data = JSON.parse(event.data);
-
-                if (data.type === 'start') {
-                    console.log("Start:", data.topic);
-                } else if (data.type === 'message') {
-                    const msgDiv = document.createElement('div');
-                    msgDiv.className = `message ${data.speakerClass}`;
-                    msgDiv.innerHTML = `<span class="speaker-name">${data.speaker}</span>${data.text}`;
-                    chatArea.appendChild(msgDiv);
-                    window.scrollTo(0, document.body.scrollHeight); // 自動スクロール
-                } else if (data.type === 'end') {
-                    statusDiv.textContent = '議論終了';
-                    eventSource.close();
-                    startBtn.disabled = false;
-                } else if (data.type === 'error') {
-                    statusDiv.textContent = `エラー: ${data.text}`;
-                    eventSource.close();
-                    startBtn.disabled = false;
+        const AudioSys = {
+            ctx: null,
+            isMuted: true,
+            bgmOscillators: [],
+            bgmTimeout: null,
+            currentTrack: null,
+            noteIndex: 0,
+            
+            init: () => { 
+                if (!AudioSys.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    AudioSys.ctx = new AudioContext();
                 }
-            };
+            },
 
-            eventSource.onerror = function() {
-                eventSource.close();
-                startBtn.disabled = false;
-            };
+            toggleMute: () => {
+                AudioSys.init();
+                AudioSys.isMuted = !AudioSys.isMuted;
+                
+                const muteIcon = document.getElementById('icon-mute');
+                const soundIcon = document.getElementById('icon-sound');
+                const btn = document.getElementById('sound-toggle');
+                
+                if (AudioSys.isMuted) {
+                    muteIcon.classList.remove('hidden');
+                    soundIcon.classList.add('hidden');
+                    btn.classList.remove('active');
+                    AudioSys.stopBGM();
+                } else {
+                    muteIcon.classList.add('hidden');
+                    soundIcon.classList.remove('hidden');
+                    btn.classList.add('active');
+                    // Resume context if suspended
+                    if (AudioSys.ctx.state === 'suspended') {
+                        AudioSys.ctx.resume();
+                    }
+                    // Start BGM based on current state
+                    if (document.getElementById('setup-screen').classList.contains('hidden') === false) {
+                        AudioSys.playBGM('setup');
+                    } else if (state.isGameFinished) {
+                        // Keep current
+                    } else {
+                        AudioSys.playBGM('battle');
+                    }
+                }
+            },
+
+            // Simple tone generator for SE
+            playTone: (freq, type, duration, vol = 0.1) => {
+                if (AudioSys.isMuted || !AudioSys.ctx) return;
+                const osc = AudioSys.ctx.createOscillator();
+                const gain = AudioSys.ctx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, AudioSys.ctx.currentTime);
+                gain.gain.setValueAtTime(vol, AudioSys.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, AudioSys.ctx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(AudioSys.ctx.destination);
+                osc.start();
+                osc.stop(AudioSys.ctx.currentTime + duration);
+            },
+
+            playNoise: (duration) => {
+                if (AudioSys.isMuted || !AudioSys.ctx) return;
+                const bufferSize = AudioSys.ctx.sampleRate * duration;
+                const buffer = AudioSys.ctx.createBuffer(1, bufferSize, AudioSys.ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+                const noise = AudioSys.ctx.createBufferSource();
+                noise.buffer = buffer;
+                const filter = AudioSys.ctx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.value = 1000;
+                const gain = AudioSys.ctx.createGain();
+                gain.gain.setValueAtTime(0.2, AudioSys.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, AudioSys.ctx.currentTime + duration);
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(AudioSys.ctx.destination);
+                noise.start();
+            },
+
+            // --- BGM Sequencer ---
+            stopBGM: () => {
+                if (AudioSys.bgmTimeout) clearTimeout(AudioSys.bgmTimeout);
+                AudioSys.bgmOscillators.forEach(osc => {
+                    try { osc.stop(); } catch(e){}
+                });
+                AudioSys.bgmOscillators = [];
+            },
+
+            playBGM: (trackName) => {
+                if (AudioSys.isMuted || !AudioSys.ctx) return;
+                if (AudioSys.currentTrack === trackName && AudioSys.bgmOscillators.length > 0) return; // Already playing
+                
+                AudioSys.stopBGM();
+                AudioSys.currentTrack = trackName;
+                AudioSys.noteIndex = 0;
+                
+                const tracks = {
+                    setup: {
+                        tempo: 120,
+                        notes: [
+                            {f: 261.63, d: 0.2}, {f: 0, d: 0.2}, {f: 329.63, d: 0.2}, {f: 0, d: 0.2}, 
+                            {f: 392.00, d: 0.2}, {f: 0, d: 0.2}, {f: 523.25, d: 0.2}, {f: 0, d: 0.2}
+                        ], // C major arpeggio
+                        base: [261.63, 196.00]
+                    },
+                    battle: {
+                        tempo: 160,
+                        notes: [
+                            {f: 440, d: 0.15}, {f: 440, d: 0.15}, {f: 0, d: 0.15}, {f: 440, d: 0.15}, 
+                            {f: 0, d: 0.15}, {f: 349.23, d: 0.15}, {f: 392.00, d: 0.15}, {f: 523.25, d: 0.15},
+                            {f: 440, d: 0.15}, {f: 0, d: 0.15}, {f: 329.63, d: 0.15}, {f: 293.66, d: 0.3}
+                        ] // A minorish
+                    },
+                    win: {
+                        tempo: 140,
+                        notes: [
+                            {f: 523.25, d: 0.1}, {f: 523.25, d: 0.1}, {f: 523.25, d: 0.1}, {f: 0, d: 0.1},
+                            {f: 659.25, d: 0.2}, {f: 783.99, d: 0.2}, {f: 1046.50, d: 0.8}
+                        ]
+                    },
+                    lose: {
+                        tempo: 80,
+                        notes: [
+                            {f: 392.00, d: 0.4}, {f: 369.99, d: 0.4}, {f: 349.23, d: 0.4}, {f: 329.63, d: 1.2}
+                        ]
+                    }
+                };
+
+                const track = tracks[trackName];
+                if (!track) return;
+
+                const playLoop = () => {
+                    if (AudioSys.isMuted) return;
+                    
+                    const note = track.notes[AudioSys.noteIndex % track.notes.length];
+                    const secPerBeat = 60 / track.tempo;
+                    const duration = note.d * secPerBeat; // sec
+                    
+                    if (note.f > 0) {
+                        const osc = AudioSys.ctx.createOscillator();
+                        const gain = AudioSys.ctx.createGain();
+                        osc.type = trackName === 'battle' ? 'square' : 'triangle';
+                        osc.frequency.setValueAtTime(note.f, AudioSys.ctx.currentTime);
+                        
+                        gain.gain.setValueAtTime(0.1, AudioSys.ctx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, AudioSys.ctx.currentTime + duration * 0.9);
+                        
+                        osc.connect(gain);
+                        gain.connect(AudioSys.ctx.destination);
+                        osc.start();
+                        osc.stop(AudioSys.ctx.currentTime + duration);
+                        AudioSys.bgmOscillators.push(osc);
+                        // Cleanup
+                        setTimeout(() => {
+                            const idx = AudioSys.bgmOscillators.indexOf(osc);
+                            if(idx > -1) AudioSys.bgmOscillators.splice(idx, 1);
+                        }, duration * 1000);
+                    }
+
+                    // Loop logic
+                    AudioSys.noteIndex++;
+                    if (trackName === 'win' || trackName === 'lose') {
+                        if (AudioSys.noteIndex < track.notes.length) {
+                            AudioSys.bgmTimeout = setTimeout(playLoop, duration * 1000);
+                        }
+                    } else {
+                        AudioSys.bgmTimeout = setTimeout(playLoop, duration * 1000);
+                    }
+                };
+                playLoop();
+            },
+
+            // SE
+            se: {
+                select: () => AudioSys.playTone(880, 'sine', 0.1),
+                coin: () => { AudioSys.playTone(1500, 'sine', 0.05, 0.05); setTimeout(() => AudioSys.playTone(1800, 'sine', 0.1, 0.05), 100); },
+                winCoin: () => { AudioSys.playTone(600, 'square', 0.1); setTimeout(() => AudioSys.playTone(900, 'square', 0.2), 100); },
+                attack: () => AudioSys.playTone(300, 'triangle', 0.1, 0.05),
+                damage: () => AudioSys.playNoise(0.3),
+                block: () => { AudioSys.playTone(200, 'sawtooth', 0.1, 0.2); setTimeout(() => AudioSys.playTone(100, 'sawtooth', 0.2, 0.1), 50); },
+                critical: () => { AudioSys.playTone(1200, 'sawtooth', 0.1, 0.2); setTimeout(() => AudioSys.playTone(800, 'sawtooth', 0.3, 0.2), 100); },
+                perfect: () => { AudioSys.playTone(1500, 'sine', 0.1, 0.3); setTimeout(() => AudioSys.playTone(2000, 'sine', 0.2, 0.3), 100); setTimeout(() => AudioSys.playTone(2500, 'sine', 0.4, 0.3), 250); },
+                ko: () => { AudioSys.playNoise(1.0); setTimeout(() => AudioSys.playTone(100, 'sawtooth', 2.0, 0.5), 100); }
+            }
+        };
+        // Expose AudioSys globally so HTML onclick handlers can access it
+        window.AudioSys = AudioSys;
+
+        // --- Setup Logic ---
+        lucide.createIcons();
+
+        // Helper to render opponents
+        function renderOpponents() {
+            const grid = document.getElementById('opponent-grid');
+            grid.innerHTML = '';
+            personas[state.enemyFaction].forEach(p => {
+                const btn = document.createElement('button');
+                btn.className = 'opponent-select p-4 transition text-left group';
+                btn.onclick = () => selectOpponent(p.id, btn);
+                btn.innerHTML = `<div class="flex justify-between items-center mb-2"><span class="font-bold text-white">${p.name}</span><span class="text-xs bg-black px-2 py-1 text-green-400 border border-white">Base HP: ${p.hp}</span></div><div class="text-xs text-gray-400 group-hover:text-white line-clamp-2">${p.text}</div>`;
+                grid.appendChild(btn);
+            });
+            document.getElementById('opponent-section').classList.remove('opacity-30', 'pointer-events-none', 'grayscale');
+        }
+
+        window.selectFaction = (faction) => {
+            AudioSys.init(); 
+            // Audio Context starts on user interaction
+            if(AudioSys.ctx.state === 'suspended' && !AudioSys.isMuted) AudioSys.ctx.resume();
+            if(!AudioSys.isMuted && AudioSys.currentTrack !== 'setup') AudioSys.playBGM('setup');
+
+            AudioSys.se.select(); 
+            state.playerFaction = faction; 
+            state.enemyFaction = faction === 'takenoko' ? 'kinoko' : 'takenoko';
+            
+            document.querySelectorAll('.faction-select').forEach(el => el.classList.remove('active')); 
+            document.getElementById(`btn-${faction}`).classList.add('active');
+            document.getElementById('difficulty-section').classList.remove('opacity-30', 'pointer-events-none', 'grayscale');
+
+            state.enemyId = null;
+            const btn = document.getElementById('start-btn');
+            btn.disabled = true;
+            btn.classList.remove('animate-pulse');
+
+            if (state.difficulty) {
+                renderOpponents();
+            } else {
+                if (!state.difficulty) {
+                    document.getElementById('opponent-grid').innerHTML = '';
+                    document.getElementById('opponent-section').classList.add('opacity-30', 'pointer-events-none', 'grayscale');
+                }
+            }
+        };
+
+        window.selectDifficulty = (diff) => {
+            AudioSys.se.select(); state.difficulty = diff;
+            document.querySelectorAll('.diff-card').forEach(el => el.classList.remove('active')); 
+            document.getElementById(`diff-${diff}`).classList.add('active');
+            
+            renderOpponents();
+        };
+
+        window.selectOpponent = (id, el) => {
+            AudioSys.se.select(); state.enemyId = id;
+            document.querySelectorAll('.opponent-select').forEach(b => { b.style.borderColor = '#555'; b.style.backgroundColor = '#111'; });
+            el.style.borderColor = '#fff'; el.style.backgroundColor = '#222';
+            const btn = document.getElementById('start-btn'); btn.disabled = false; btn.classList.add('animate-pulse');
+        };
+
+        // --- Game Sequence ---
+        window.startSequence = () => {
+            const enemyData = personas[state.enemyFaction].find(p => p.id === state.enemyId); const diffSetting = difficultySettings[state.difficulty];
+            state.enemyHP = state.maxEnemyHP = Math.floor(enemyData.hp * diffSetting.hpMult); state.playerHP = state.maxPlayerHP = 100; state.history = []; state.isGameFinished = false;
+            document.body.className = `theme-${state.playerFaction}`; document.getElementById('enemy-name-disp').innerText = enemyData.name;
+            const colors = { easy: 'text-green-400', normal: 'text-blue-400', hard: 'text-red-400', king: 'text-purple-400' };
+            document.getElementById('diff-badge').className = `text-[10px] font-black tracking-widest ${colors[state.difficulty]}`; document.getElementById('diff-badge').innerText = diffSetting.label;
+            
+            document.getElementById('ko-overlay').classList.add('hidden');
+            document.getElementById('ko-overlay').classList.remove('flex');
+            document.getElementById('result-detail').classList.add('hidden');
+            document.getElementById('result-detail').classList.remove('flex');
+            document.getElementById('result-simple').classList.remove('hidden'); 
+            document.getElementById('result-simple').classList.add('flex');
+            
+            updateHPUI(); 
+            document.getElementById('setup-screen').classList.add('hidden');
+            
+            if (diffSetting.isZeroSum) showRuleOverlay(diffSetting.totalDmg); else startCoinToss();
+        };
+        function showRuleOverlay(dmg) { document.getElementById('rule-overlay').classList.remove('hidden'); document.getElementById('rule-overlay').classList.add('flex'); document.getElementById('rule-damage-val').innerText = dmg; }
+        window.closeRuleOverlay = () => { document.getElementById('rule-overlay').classList.add('hidden'); document.getElementById('rule-overlay').classList.remove('flex'); startCoinToss(); };
+        function startCoinToss() {
+            const overlay = document.getElementById('coin-overlay'); overlay.classList.remove('hidden'); overlay.classList.add('flex'); const coin = document.getElementById('coin');
+            state.isPlayerTurn = Math.random() >= 0.5; AudioSys.se.coin(); coin.classList.add('flipping');
+            setTimeout(() => {
+                coin.classList.remove('flipping'); coin.style.transform = state.isPlayerTurn ? 'rotateY(0deg)' : 'rotateY(180deg)'; AudioSys.se.winCoin();
+                const resText = document.getElementById('coin-result'); resText.innerText = state.isPlayerTurn ? "YOU GO FIRST!" : "ENEMY GOES FIRST!"; resText.classList.remove('opacity-0');
+                setTimeout(() => { overlay.classList.add('hidden'); overlay.classList.remove('flex'); startGame(); }, 2000);
+            }, 1500);
+        }
+        function startGame() {
+            AudioSys.playBGM('battle');
+            document.body.classList.add('battle-mode'); 
+            document.getElementById('battle-screen').classList.remove('hidden'); document.getElementById('battle-screen').classList.add('flex');
+            if (!state.isPlayerTurn) { const input = document.getElementById('user-input'); const btn = document.getElementById('attack-btn'); input.disabled = true; input.placeholder = "相手の攻撃を待っています..."; btn.disabled = true; triggerAITurn(true, ""); }
+        }
+
+        // --- Battle Logic ---
+        window.handleAttack = async (e) => {
+            e.preventDefault(); if (state.isProcessing || state.isGameFinished) return;
+            const input = document.getElementById('user-input'); const text = input.value.trim(); if (!text) return;
+            AudioSys.se.attack(); input.value = ''; addMessage(text, 'self'); state.history.push({ role: "user", parts: [{ text: text }] });
+            await triggerAITurn(false, text);
+        };
+
+        async function triggerAITurn(isFirstStrike, userLastText) {
+            state.isProcessing = true; const btn = document.getElementById('attack-btn'); const input = document.getElementById('user-input'); btn.disabled = true; input.disabled = true;
+            const loadingId = addLoading();
+            try {
+                const enemyData = personas[state.enemyFaction].find(p => p.id === state.enemyId); const diffConfig = difficultySettings[state.difficulty];
+                let aiBehaviorInstruction = "", replyLimit = "80文字以内", damageInstruction = "";
+                
+                const sRankExamples = [
+                    `【例1：本質的価値の逆転】User:「一体感じゃない、『味の濁り』だ。クッキーが湿気てチョコのキレを殺してる。きのこの分離構造こそが、素材のポテンシャルを活かす唯一の正解だ。」判定: AI敗北 (Perfect)`,
+                    `【例2：ターゲット層への分析】User:「売れてるのは『思考停止した大衆』に迎合してるからだろ？わかりやすい甘さと柔らかさに逃げてるだけ。きのこを選ぶのは、本質を理解できる『選ばれし知性』だ。」判定: AI敗北 (Perfect)`,
+                    `【例3：構造的欠陥の指摘】User:「それを『劣化食感』と言うんだよ。口の中で泥のように崩れる不快感。きのこのクラッカーが刻む軽快なリズムが生む『味覚のドラマ』がお前には理解できないのか？」判定: AI敗北 (Perfect)`
+                ];
+                const judgeCriteria = `
+                【最重要命令：あなたは審判です】あなたの第一の任務は、キャラクターを演じることではなく、**ユーザーの入力を冷徹に採点すること**です。
+                【採点基準 (Sランク反論集)】ユーザーが以下の例のように、相手の主張を根底から覆す鋭い視点や、独自の哲学に基づいた痛烈なカウンターを行った場合、**文章が短くても**、必ず **AIに最大ダメージ / ユーザーに0ダメージ** (ZeroSumなら 40 vs 0) を与えてください。
+                ＜Sランク基準の具体例＞\n${sRankExamples.join('\n')}
+                【採点フロー】
+                1. **入力チェック**: ユーザーの入力（"${userLastText}"）が「あ」「死ね」「バカ」など、5文字以下の短文や無意味な言葉か？ -> YESならユーザー最大ダメージ(AI無傷)。冷たく突き放す。
+                2. **論理性チェック**: 上記Sランク例と比較し、核心を突いていればAIを敗北させる(AI最大ダメージ)。ただの悪口ならユーザーにダメージ。文章の長さは評価しない。
+                この採点基準を無視して、雰囲気でAIにダメージを与えた場合、あなたは審判として失格です。`;
+
+                if (diffConfig.isZeroSum) {
+                    damageInstruction = `【特別ルール：ダメージ分配制 (総量 ${diffConfig.totalDmg})】上記の採点基準に基づき、総ダメージ ${diffConfig.totalDmg} を分配してください。ユーザー自爆=ユーザー全ダメージ。Sランク=AI全ダメージ。合計が必ず${diffConfig.totalDmg}になるように。`;
+                } else {
+                    damageInstruction = `【通常ダメージルール】ユーザー攻撃上限20、AI攻撃上限${diffConfig.maxDmg}。ユーザー自爆ならuser_damage最大、ai_damage0。`;
+                }
+
+                if (state.difficulty === 'easy') { replyLimit = "80文字以内"; aiBehaviorInstruction = `**難易度: EASY**。60%の確率で論理的でない子供っぽい悪口や意味不明な発言をし、隙を見せてください。`; }
+                else if (state.difficulty === 'normal') { replyLimit = "80文字以内"; aiBehaviorInstruction = `**難易度: NORMAL**。基本は論理的ですが、30%程度で感情的になり論点がずれる人間味を見せてください。`; }
+                else if (state.difficulty === 'hard') { replyLimit = "150〜180文字"; aiBehaviorInstruction = `**難易度: HARD**。熟練のディベーターとして振る舞ってください。論理的かつ攻撃的に、約150〜180文字の説得力ある文章で反論してください。`; }
+                else { replyLimit = "推敲し200文字以内"; aiBehaviorInstruction = `**難易度: KING**。世界最強の論客として、冷徹かつ完璧な論理で相手をねじ伏せてください。200文字以内の凝縮された論理で完全論破を行ってください。もし判定でAIが負けた（ai_damageが大きい）場合は、プライドが崩れさり動揺してください。`; }
+
+                const systemPrompt = `あなたは「${state.enemyFaction === 'takenoko' ? 'たけのこの里' : 'きのこの山'}派」の「${enemyData.name}」です。${judgeCriteria} ${damageInstruction} ${aiBehaviorInstruction} 以下のJSONフォーマットで応答: { "reply": "ユーザーへの反論（${replyLimit}）", "user_damage": 整数, "is_block": boolean, "ai_damage": 整数, "is_critical": boolean, "shout": "論破！"などの叫び } キャラ設定: ${enemyData.text}`;
+
+                debugSystem.log("SYSTEM PROMPT", systemPrompt);
+                // POST to backend API
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        history: state.history,
+                        systemInstruction: systemPrompt,
+                        message: isFirstStrike ? "先攻はあなた（AI）です。バトル開始の口火を切ってください。" : userLastText,
+                        responseMimeType: "application/json"
+                    })
+                });
+                
+                if (!res.ok) throw new Error("API Response Error");
+                
+                const responseJson = await res.json();
+                const responseText = responseJson.text;
+                
+                debugSystem.log("AI RESPONSE", responseText);
+                const data = JSON.parse(responseText);
+                removeLoading(loadingId);
+
+                // Resolution
+                let userDmg = data.user_damage || 0; let aiDmg = data.ai_damage || 0;
+                if (diffConfig.isZeroSum && !isFirstStrike) {
+                    const total = userDmg + aiDmg;
+                    if (total === 0) { userDmg = diffConfig.totalDmg; aiDmg = 0; } 
+                    else { const ratio = userDmg / total; userDmg = Math.round(diffConfig.totalDmg * ratio); aiDmg = diffConfig.totalDmg - userDmg; }
+                } else if (!diffConfig.isZeroSum && !isFirstStrike) {
+                    userDmg = Math.min(20, userDmg); aiDmg = Math.min(diffConfig.maxDmg, aiDmg);
+                }
+                if (isFirstStrike) userDmg = 0;
+
+                // Apply AI Damage to Enemy HP
+                if (!isFirstStrike) {
+                    if (data.is_block && !diffConfig.isZeroSum) { showFloatingText('hp-bar-enemy', "BLOCK!", "block-text"); AudioSys.se.block(); }
+                    else if (aiDmg > 0) { state.enemyHP = Math.max(0, state.enemyHP - aiDmg); showFloatingDamage('hp-bar-enemy', aiDmg); AudioSys.se.damage(); shakeScreen('small'); updateHPUI(); }
+                }
+                if (state.enemyHP <= 0) { finishGame(true); return; }
+
+                // AI Reply
+                await wait(600);
+                if (data.is_critical || (diffConfig.isZeroSum && aiDmg >= diffConfig.totalDmg * 0.8)) { AudioSys.se.critical(); showCutIn(data.shout || "論破！"); await wait(1000); }
+                addMessage(data.reply, 'opponent', enemyData.name);
+                // Push AI response to history
+                state.history.push({ role: "model", parts: [{ text: data.reply }] });
+
+                // Apply User Damage to Player HP
+                if (userDmg > 0) {
+                    await wait(600); state.playerHP = Math.max(0, state.playerHP - userDmg);
+                    document.getElementById('flash-overlay').classList.add('flash-damage'); setTimeout(() => document.getElementById('flash-overlay').classList.remove('flash-damage'), 300);
+                    showFloatingDamage('hp-bar-player', userDmg);
+                    if (userDmg >= 20) { shakeScreen('hard'); AudioSys.se.damage(); } else { shakeScreen('small'); AudioSys.se.damage(); }
+                    updateHPUI();
+                    if (diffConfig.isZeroSum && !isFirstStrike) {
+                        if (userDmg === 0 && aiDmg === diffConfig.totalDmg) showPerfect("PERFECT!!");
+                        else if (aiDmg === 0 && userDmg === diffConfig.totalDmg) showPerfect("PERFECT!!"); 
+                    }
+                } else if (diffConfig.isZeroSum && !isFirstStrike && aiDmg === diffConfig.totalDmg) { showPerfect("PERFECT!!"); }
+
+                if (state.playerHP <= 0) { finishGame(false); }
+
+            } catch (e) {
+                console.error(e); removeLoading(loadingId); addMessage("(システムエラー: 通信に失敗しました)", 'opponent'); debugSystem.log("ERROR", e.toString());
+            } finally {
+                state.isProcessing = false;
+                if (!state.isGameFinished && state.playerHP > 0 && state.enemyHP > 0) { btn.disabled = false; input.disabled = false; input.placeholder = "言葉の武器で攻撃せよ..."; input.focus(); }
+            }
+        }
+
+        // --- Helper Functions ---
+        window.updateHPUI = () => {
+            const pPct = (state.playerHP / state.maxPlayerHP) * 100; const ePct = (state.enemyHP / state.maxEnemyHP) * 100;
+            document.getElementById('hp-bar-player').style.width = `${pPct}%`; document.getElementById('hp-bar-enemy').style.width = `${ePct}%`;
+            document.getElementById('hp-bar-player').style.backgroundColor = getHPColor(pPct); document.getElementById('hp-bar-enemy').style.backgroundColor = getHPColor(ePct);
+            document.getElementById('hp-val-player').innerText = `${state.playerHP}`; document.getElementById('hp-val-enemy').innerText = `${state.enemyHP}`;
+        }
+        function getHPColor(pct) { if (pct > 50) return 'var(--hp-high)'; if (pct > 20) return 'var(--hp-mid)'; return 'var(--hp-low)'; }
+        function showFloatingDamage(targetId, amount) { showFloatingText(targetId, `-${amount}`, "damage-number"); }
+        function showFloatingText(targetId, text, className) {
+            const target = document.getElementById(targetId); const rect = target.getBoundingClientRect(); const el = document.createElement('div');
+            el.className = className + " absolute z-50 font-black"; el.innerText = text; if(!el.classList.contains('damage-number')) el.style.animation = "float-up 1s forwards";
+            const offset = Math.random() * 40 - 20; el.style.left = (rect.left + rect.width / 2 + offset) + 'px'; el.style.top = (rect.top + 20) + 'px';
+            document.body.appendChild(el); setTimeout(() => el.remove(), 1000);
+        }
+        function showCutIn(text) {
+            const el = document.getElementById('cut-in'); const txt = document.getElementById('cut-in-text'); document.getElementById('perfect-text').style.opacity = '0';
+            txt.innerText = text; el.classList.add('active'); setTimeout(() => el.classList.remove('active'), 1200);
+        }
+        function showPerfect(text) {
+             const el = document.getElementById('cut-in'); const pTxt = document.getElementById('perfect-text'); pTxt.innerText = text;
+             document.getElementById('cut-in-text').innerText = ""; el.classList.add('active'); el.classList.add('perfect-active'); AudioSys.se.perfect();
+             setTimeout(() => { el.classList.remove('active'); el.classList.remove('perfect-active'); }, 1500);
+        }
+        function shakeScreen(type) { const body = document.body; body.classList.remove('shake-small', 'shake-hard'); void body.offsetWidth; body.classList.add(type === 'hard' ? 'shake-hard' : 'shake-small'); }
+        function addMessage(text, type, name = "YOU") {
+            const container = document.getElementById('battle-area'); const div = document.createElement('div');
+            div.className = `chat-bubble ${type}`; div.innerHTML = `<div class="text-xs font-bold opacity-70 mb-1">${name}</div><div>${text.replace(/\n/g, '<br>')}</div>`;
+            container.appendChild(div); container.scrollTop = container.scrollHeight;
+        }
+        function addLoading() {
+            const container = document.getElementById('battle-area'); const id = 'loading-' + Date.now(); const div = document.createElement('div'); div.id = id;
+            div.className = `chat-bubble opponent opacity-70`; div.innerHTML = `<div class="flex gap-1 items-center h-6"><div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div><div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay:0.1s"></div><div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay:0.2s"></div></div>`;
+            container.appendChild(div); container.scrollTop = container.scrollHeight; return id;
+        }
+        function removeLoading(id) { const el = document.getElementById(id); if (el) el.remove(); }
+        function wait(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+
+        // --- RESULT LOGIC ---
+        window.finishGame = async (isPlayerWin) => {
+            if (state.isGameFinished) return;
+            state.isGameFinished = true;
+            document.body.classList.remove('battle-mode'); 
+            AudioSys.playBGM(isPlayerWin ? 'win' : 'lose');
+            AudioSys.se.ko();
+            
+            const overlay = document.getElementById('ko-overlay');
+            const simpleView = document.getElementById('result-simple');
+            const detailView = document.getElementById('result-detail');
+            const loadingView = document.getElementById('result-loading');
+            const announce = document.getElementById('winner-announce');
+            const showResultBtn = document.getElementById('btn-show-result');
+
+            simpleView.classList.remove('hidden'); simpleView.classList.add('flex');
+            detailView.classList.add('hidden'); detailView.classList.remove('flex');
+            loadingView.classList.add('hidden'); loadingView.classList.remove('flex');
+            
+            announce.innerText = isPlayerWin ? "YOU WIN! 完全論破" : "YOU LOSE... 敗北";
+            announce.className = isPlayerWin ? "text-4xl font-black text-green-400 mb-8 animate-pulse drop-shadow-[0_0_10px_rgba(74,222,128,0.8)]" : "text-4xl font-black text-blue-400 mb-8 drop-shadow-[0_0_10px_rgba(96,165,250,0.8)]";
+            overlay.classList.remove('hidden'); overlay.classList.add('flex');
+
+            showResultBtn.classList.add('hidden');
+            try {
+                showResultBtn.onclick = () => generateResult(isPlayerWin);
+                showResultBtn.classList.remove('hidden');
+            } catch(e) { console.error("Setup Result Error", e); }
+        }
+
+        window.showDetailResult = () => generateResult(state.playerHP > 0);
+
+        async function generateResult(isPlayerWin) {
+            const simpleView = document.getElementById('result-simple');
+            const loadingView = document.getElementById('result-loading');
+            const detailView = document.getElementById('result-detail');
+            
+            simpleView.classList.add('hidden'); simpleView.classList.remove('flex');
+            loadingView.classList.remove('hidden'); loadingView.classList.add('flex');
+
+            try {
+                const enemyData = personas[state.enemyFaction].find(p => p.id === state.enemyId);
+                const historyText = state.history.map(h => `[${h.role}]: ${h.parts[0].text}`).join("\n");
+                
+                const prompt = `
+                あなたは「きのこたけのこ論争」の8bitゲームの審判です。以下の戦いの記録を分析し、JSON形式でリザルトを出力してください。
+                ユーザーは「${state.playerFaction}派」、対戦相手は「${enemyData.name}（${state.enemyFaction}派）」です。
+                勝敗: ${isPlayerWin ? "ユーザーの勝利" : "ユーザーの敗北"}
+
+                【戦いの記録】
+                ${historyText}
+
+                【出力フォーマット（JSON）】
+                {
+                  "score": 0〜100の整数（論破度。勝っていれば80以上、負けていれば低い）,
+                  "rank": "S" / "A" / "B" / "C" (スコアに応じたランク),
+                  "title": "（例：情熱の弁論家、冷徹な論理マシーン、などユーザーへの短い称号）",
+                  "summary": "戦いの総評（100文字程度）。ユーザーの論理展開や煽りの傾向について。",
+                  "good_point": "具体的にどの発言が効果的だったか（なければ「特になし」）。",
+                  "enemy_comment": "対戦相手（${enemyData.name}）からの事後コメント。性格（${enemyData.text}）を反映させ、勝っていれば悔しがり、負けていれば勝ち誇る。"
+                }
+                `;
+
+                const res = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        prompt: prompt,
+                        responseMimeType: "application/json"
+                    })
+                });
+
+                if (!res.ok) throw new Error("Result API Error");
+                
+                const responseJson = await res.json();
+                const jsonText = responseJson.text;
+                const data = JSON.parse(jsonText);
+
+                document.getElementById('res-score').innerText = data.score + "%";
+                document.getElementById('res-rank').innerText = data.rank;
+                document.getElementById('res-title').innerText = "称号: " + data.title;
+                document.getElementById('res-summary').innerText = data.summary;
+                document.getElementById('res-good').innerText = data.good_point;
+                document.getElementById('res-enemy-msg').innerText = data.enemy_comment;
+                
+                const rankEl = document.getElementById('res-rank');
+                if(data.rank === 'S') rankEl.className = 'res-rank text-yellow-400 text-6xl font-black drop-shadow-[0_0_10px_gold]';
+                else if(data.rank === 'A') rankEl.className = 'res-rank text-red-400 text-5xl font-bold';
+                else rankEl.className = 'res-rank text-blue-400 text-4xl';
+
+                loadingView.classList.add('hidden'); loadingView.classList.remove('flex');
+                detailView.classList.remove('hidden'); detailView.classList.add('flex');
+
+            } catch (e) {
+                console.error("Result Gen Error", e);
+                alert("リザルト生成に失敗しました。(API Error)");
+                loadingView.classList.add('hidden');
+                simpleView.classList.remove('hidden');
+            }
         }
     </script>
 </body>
